@@ -311,9 +311,25 @@
     </p>
   </div>
 
+  <!-- ── Primary CTA ── -->
+  <div style="margin-bottom:1rem;">
+    <a href="#scenario-03" style="
+      display:inline-block;
+      background:rgba(210,153,34,0.15);
+      border:1px solid rgba(210,153,34,0.5);
+      color:#e6b84a;
+      font-size:0.9rem;
+      font-weight:600;
+      padding:0.55rem 1.25rem;
+      border-radius:6px;
+      text-decoration:none;
+    ">Run the tamper demo in 60 seconds ↓</a>
+    <span style="margin-left:1rem;font-size:0.8rem;color:var(--muted);">or pick any scenario below</span>
+  </div>
+
   <!-- ── Quick verify CTA ── -->
   <div class="quick-verify">
-    <div class="quick-verify-label">Verify now — pick a scenario</div>
+    <div class="quick-verify-label">All three scenarios — copy-paste commands</div>
     <div class="quick-verify-grid">
       <div class="qv-row">
         <span class="qv-label">Clean pass</span>
@@ -340,6 +356,10 @@
 
   <!-- ── Exit code table ── -->
   <div class="section-label">Exit code contract</div>
+  <p style="font-size:0.875rem;color:var(--text);margin-bottom:1rem;">
+    <strong>Exit 1 = authentic evidence of failure, not corruption.</strong>
+    The pack is valid. The failure is the proof.
+  </p>
   <table class="exit-table">
     <thead>
       <tr><th>Exit</th><th>Meaning</th><th>What it tells an auditor</th></tr>
@@ -373,6 +393,9 @@
 
   <!-- ── Why this matters ── -->
   <div class="section-label">Why this matters</div>
+  <p style="font-size:0.875rem;color:var(--muted);margin-bottom:1rem;">
+    Use this when a customer, auditor, or regulator asks: <em style="color:var(--text);">prove the controls actually ran.</em>
+  </p>
   <div class="why-strip">
     <div class="why-item">
       <div class="why-item-heading">Failure can't be hidden</div>
@@ -420,7 +443,7 @@
   <div class="cards">
 
     <!-- Scenario 03 — tamper demo -->
-    <div class="card featured">
+    <div id="scenario-03" class="card featured">
       <div class="featured-label">Featured — tamper demo</div>
       <div class="card-header">
         <div>
@@ -557,6 +580,13 @@ assay verify-pack ./gallery/03-tamper-demo/tampered   # exit 2 — TAMPERED</div
     </div>
 
   </div><!-- .cards -->
+
+  <p style="margin-top:2.5rem;font-size:0.78rem;color:var(--muted);border-top:1px solid var(--border);padding-top:1.25rem;">
+    <strong style="color:var(--text);">What this does not prove:</strong>
+    post-hoc integrity of the pack, not source honesty at creation.
+    If the instrumented code lies about what it called, the receipt will faithfully record that lie.
+    The trust boundary is tamper-evidence, not omniscience.
+  </p>
 
   <footer>
     <p>
