@@ -1,12 +1,12 @@
 {
-  "pack_id": "pack_20260307T043413_29beb004",
+  "pack_id": "pack_20260307T060838_e3df25c7",
   "pack_version": "0.1.0",
   "manifest_version": "1.0.0",
   "hash_alg": "sha256",
   "attestation": {
     "pack_format_version": "0.1.0",
     "fingerprint_version": 1,
-    "pack_id": "pack_20260307T043413_29beb004",
+    "pack_id": "pack_20260307T060838_e3df25c7",
     "run_id": "challenge-run",
     "suite_id": "manual",
     "suite_hash": "36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88",
@@ -31,7 +31,7 @@
     "timestamp_end": "2026-02-10T12:00:02Z",
     "ci_binding": null
   },
-  "attestation_sha256": "d664115a7aaaedfb426e6de702e58052b179e8ec3d1686ca563053f24628cb2e",
+  "attestation_sha256": "a2d765a879f764715157795cb92d725525aea6eca0c91d91f1af32015e43aa9a",
   "suite_hash": "36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88",
   "claim_set_id": "none",
   "claim_set_hash": "5efc5f82b53f421751fce8639b5937eb4d45bd80ab9d1f8da264e81c6b6b7cc0",
@@ -44,12 +44,12 @@
     },
     {
       "path": "verify_report.json",
-      "sha256": "cef0c970ee48f12a33eb207aaa81e66109f0a905cc692d88a6536237d286b23b",
+      "sha256": "1571f55afd7cc5ff50ff69f6a53d89799c6f3e5ed003aa0320318630b1a273c8",
       "bytes": 1122
     },
     {
       "path": "verify_transcript.md",
-      "sha256": "3adbbc734ddee25e19fd6b81ac56c3450f8c7e9627111d67b0eb56cbc84fd59e",
+      "sha256": "6d7754c52110ff68b419a58f4b5b7056830e4ccf96355d5ce74bf4cdd929b6cf",
       "bytes": 703
     }
   ],
@@ -61,10 +61,10 @@
     "pack_signature.sig"
   ],
   "signer_id": "challenge",
-  "signer_pubkey": "Fh8p0yd9H/TnHneaZ4EpoXlvMmlRZcG3MvTMDZhsi5U=",
-  "signer_pubkey_sha256": "5ba4db0672eee8e91ed930b6ce4c72058b3b7bc9bb070f4a58ac5ef9006b0443",
+  "signer_pubkey": "ssngWYgZQTeHGtv33fpCb6CbpKd94avReArBeJSpBc4=",
+  "signer_pubkey_sha256": "05a25e3cade8691dd3d1d6880ba4d504a90a62f49ed367a2b0a66c491e042e49",
   "signature_alg": "ed25519",
   "signature_scope": "JCS(pack_manifest_without_signature)",
-  "signature": "Ti6lxJdOnSuIIiZJKslW3Gs4GDeDjNORHs5eTxbLAW1NJgek+93gAdWOTAs2HWqpDMyjQNfWGn3LIsSzepCvBA==",
-  "pack_root_sha256": "d664115a7aaaedfb426e6de702e58052b179e8ec3d1686ca563053f24628cb2e"
+  "signature": "iQfu/yq+NQ9LwqaUw2v9tQyYo7GGG0JgU+TCq6LYq5rADrghKPg5Kg6Gnb9tFVYXH0TolHfleNzyAJGluMoWDg==",
+  "pack_root_sha256": "a2d765a879f764715157795cb92d725525aea6eca0c91d91f1af32015e43aa9a"
 }

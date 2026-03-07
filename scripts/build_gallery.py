@@ -119,6 +119,24 @@ print("FintechCo agent: 5 receipts emitted")
     )
 
 
+def write_fintech_runcard(path: Path):
+    """Write a run-card that the fintech agent easily satisfies (5 receipts >= 3)."""
+    card = {
+        "card_id": "fintech_coverage_claim",
+        "name": "FintechCo Coverage Claim",
+        "description": "Loan approval workflow must have at least 3 receipts for audit coverage",
+        "claims": [
+            {
+                "claim_id": "minimum_receipt_coverage",
+                "description": "At least 3 receipts required for loan approval audit coverage",
+                "check": "receipt_count_ge",
+                "params": {"min_count": 3},
+            }
+        ],
+    }
+    path.write_text(json.dumps(card, indent=2))
+
+
 def write_insurance_agent(path: Path):
     """Write a synthetic InsuranceTech claims review agent script."""
     path.write_text(
@@ -190,10 +208,12 @@ def build_scenario_01(scenario_dir: Path):
 
     with tempfile.TemporaryDirectory() as tmp:
         agent_script = Path(tmp) / "fintech_agent.py"
+        run_card = Path(tmp) / "fintech_claim.json"
         write_fintech_agent(agent_script)
+        write_fintech_runcard(run_card)
 
         result = run(
-            [ASSAY_CMD, "run", "-o", str(pack_dir), "--", "python3", str(agent_script)],
+            [ASSAY_CMD, "run", "-c", str(run_card), "-o", str(pack_dir), "--", "python3", str(agent_script)],
             check=False,
             capture=True,
         )

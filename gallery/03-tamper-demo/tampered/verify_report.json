@@ -1,12 +1,12 @@
 {
-  "pack_id": "pack_20260307T043413_29beb004",
+  "pack_id": "pack_20260307T060838_e3df25c7",
   "run_id": "challenge-run",
   "passed": true,
   "errors": [],
   "warnings": [],
   "receipt_count": 3,
   "head_hash": "c127de94295454ff632be131ca6be013db05135e26be8fac6b0cfe47a3ff08dd",
-  "verified_at": "2026-03-07T04:34:13.870896+00:00",
+  "verified_at": "2026-03-07T06:08:38.221097+00:00",
   "verifier_version": "1.15.1",
   "claim_verification": {
     "passed": true,

@@ -11,7 +11,7 @@ assay verify-pack ./gallery/02-insurance-honest-fail/proof_pack \
 assay verify-pack ./gallery/03-tamper-demo/tampered           # exit 2 — TAMPERED
 ```
 
-No account. No API call. No vendor trust required.
+No account. No API call. No vendor-hosted logs or vendor dashboard required.
 
 ---
 
@@ -100,7 +100,7 @@ integrity result, and claim result as an independent, append-only witness.
 
 | Scenario | pack_root_sha256 | claim_check |
 |----------|-----------------|-------------|
-| 01 | `2226d98e2bc2b2f9...` | N/A |
+| 01 | `6e6b34e48dd13ae0...` | PASS |
 | 02 | `d2dfa04aed0697cf...` | **FAIL** (honest) |
 | 03/good | `d664115a7aaaedfb...` | PASS |
 

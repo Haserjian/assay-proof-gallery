@@ -1,14 +1,16 @@
 {
-  "content_hash": "sha256:56b1df574bd7df9e0bcf3dccc98cf440827e02e88b56001853cee2b5417c9185",
+  "content_hash": "sha256:19d9c75d7ff55a14e16a45e37c63a92d18f15a43b10cc215ed8df13ffae22f10",
   "evidence_gaps": [],
   "facts": {
     "ci": {
-      "files": [],
-      "has_assay_ref": false,
+      "files": [
+        ".github/workflows/verify-gallery.yml"
+      ],
+      "has_assay_ref": true,
       "has_lock": false,
       "has_run": false,
-      "has_verify": false,
-      "workflow_count": 0
+      "has_verify": true,
+      "workflow_count": 1
     },
     "keys": {
       "active_signer": "ci-assay-signer",
@@ -37,9 +39,9 @@
   },
   "meta": {
     "assay_version": "1.15.1",
-    "generated_at": "2026-03-07T04:34:13.093459+00:00",
-    "git_branch": null,
-    "git_commit": null,
+    "generated_at": "2026-03-07T06:08:31.966305+00:00",
+    "git_branch": "main",
+    "git_commit": "ec6f216",
     "git_dirty": true,
     "repo_name": "assay-proof-gallery",
     "repo_root": "/Users/timmybhaserjian/assay-proof-gallery"
@@ -48,16 +50,18 @@
     "breakdown": {
       "ci_gate": {
         "evidence": {
-          "files": [],
-          "has_assay_ref": false,
+          "files": [
+            ".github/workflows/verify-gallery.yml"
+          ],
+          "has_assay_ref": true,
           "has_lock": false,
           "has_run": false,
-          "has_verify": false,
-          "workflow_count": 0
+          "has_verify": true,
+          "workflow_count": 1
         },
-        "note": "No evidence CI gate detected.",
-        "points": 0.0,
-        "status": "fail",
+        "note": "Verify detected; generation step unclear.",
+        "points": 10.0,
+        "status": "partial",
         "weight": 20
       },
       "coverage": {
@@ -110,7 +114,7 @@
     "fastest_path": {
       "command": "assay run -c receipt_completeness -- python your_app.py",
       "points_est": 20.0,
-      "projected_score": 47.5,
+      "projected_score": 57.5,
       "target_grade": "D",
       "target_score": 60
     },
@@ -118,8 +122,8 @@
     "grade_description": "No evidence pipeline -- most repos start here.",
     "next_actions": [
       "Generate first evidence pack: assay run -c receipt_completeness -- python your_app.py",
-      "Harden CI gate: assay ci init github --run-command \"python your_app.py\"",
-      "Create lockfile: assay lock init"
+      "Create lockfile: assay lock init",
+      "Harden CI gate: assay ci init github --run-command \"python your_app.py\""
     ],
     "next_actions_detail": [
       {
@@ -129,21 +133,21 @@
         "points_est": 20.0
       },
       {
-        "action": "Harden CI gate",
-        "command": "assay ci init github --run-command \"python your_app.py\"",
-        "component": "ci_gate",
-        "points_est": 20.0
-      },
-      {
         "action": "Create lockfile",
         "command": "assay lock init",
         "component": "lockfile",
         "points_est": 15.0
+      },
+      {
+        "action": "Harden CI gate",
+        "command": "assay ci init github --run-command \"python your_app.py\"",
+        "component": "ci_gate",
+        "points_est": 10.0
       }
     ],
     "raw_grade": "F",
-    "raw_score": 27.5,
-    "score": 27.5,
+    "raw_score": 37.5,
+    "score": 37.5,
     "score_version": "1.0.0"
   }
 }

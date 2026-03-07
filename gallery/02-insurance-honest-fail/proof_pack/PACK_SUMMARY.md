@@ -1,7 +1,7 @@
 # Proof Pack Summary
 
-**Pack ID:** `pack_20260307T043413_d1ca7021`
-**Run ID:** `trace_20260307T043413_1f1821dd`
+**Pack ID:** `pack_20260307T060837_0fa00c86`
+**Run ID:** `trace_20260307T060837_d020f6ca`
 **Signed by:** `ci-assay-signer`
 
 ## Verdicts
@@ -20,7 +20,7 @@
 - **Providers:** anthropic
 - **Models:** claude-sonnet-4-20250514
 - **Total tokens:** 2,567
-- **Time window:** 2026-03-07T04:34:13.404086+00:00 to 2026-03-07T04:34:13.404666+00:00
+- **Time window:** 2026-03-07T06:08:37.721090+00:00 to 2026-03-07T06:08:37.721796+00:00
 
 ## Integrity Check
 

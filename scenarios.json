@@ -6,8 +6,8 @@
       "expected_verification_exit_code": 0,
       "expected_integrity": "PASS",
       "expected_claims": "PASS",
-      "built": true,
-      "actual_exit_code": 0
+      "built": false,
+      "actual_exit_code": null
     },
     {
       "id": "02-insurance-honest-fail",
@@ -15,8 +15,8 @@
       "expected_verification_exit_code": 1,
       "expected_integrity": "PASS",
       "expected_claims": "FAIL",
-      "built": true,
-      "actual_exit_code": 1
+      "built": false,
+      "actual_exit_code": null
     },
     {
       "id": "03-tamper-demo",

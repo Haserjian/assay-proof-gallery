@@ -1,6 +1,6 @@
 # Proof Pack Summary
 
-**Pack ID:** `pack_20260307T043413_29beb004`
+**Pack ID:** `pack_20260307T060838_e3df25c7`
 **Run ID:** `challenge-run`
 **Signed by:** `challenge`
 
@@ -47,5 +47,5 @@ This evidence has not been tampered with since creation.
 ## Verify Independently
 
 ```bash
-python3 -m pip install assay-ai && assay verify-pack /var/folders/f6/qdgmkgd166j03b200mvl854c0000gn/T/tmpgt1h9vea/good
+python3 -m pip install assay-ai && assay verify-pack /var/folders/f6/qdgmkgd166j03b200mvl854c0000gn/T/tmprt218k_w/good
 ```

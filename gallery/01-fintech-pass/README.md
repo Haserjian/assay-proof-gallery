@@ -23,7 +23,8 @@ an AI governance questionnaire.
 
 - 5 receipts were recorded during the run: 3 model calls, 1 guardian verdict, 1 capability use
 - The receipt pack is signed with Ed25519 and all file hashes are verified
-- The declared coverage claim passes: the recorded evidence meets the declared standard
+- The declared coverage claim passes: 5 receipts recorded, 3 required (`minimum_receipt_coverage`)
+- Both integrity and claims pass — this is a full `exit 0`, not an integrity-only result
 - This evidence cannot be altered without breaking the signature
 
 ## What This Does NOT Prove
@@ -63,13 +64,13 @@ proof_pack/
 This pack's fingerprint is recorded in the Assay public ledger with `witness_status: signature_verified`.
 
 ```
-pack_root_sha256: 2226d98e2bc2b2f93337aaf82165eb8a4089abd97533971f5d28da34693445cb
+pack_root_sha256: 6e6b34e48dd13ae0c93950734c6a4ab296e1320d8deee89bc47befebde32ebc8
 ```
 
 Verify independently: https://haserjian.github.io/assay-ledger/
 
-Search the ledger for the fingerprint above. The entry records the pack identity,
-receipt count, and integrity result at submission time — separate from this repo.
+Search the ledger for the fingerprint above. The entry records `receipt_integrity: PASS`,
+`claim_check: PASS`, and the pack identity at submission time — separate from this repo.
 
 ## Why This Matters
 

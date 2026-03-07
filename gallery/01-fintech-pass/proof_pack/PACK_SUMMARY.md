@@ -1,7 +1,7 @@
 # Proof Pack Summary
 
-**Pack ID:** `pack_20260307T043412_2a7af6d7`
-**Run ID:** `trace_20260307T043412_120c5dde`
+**Pack ID:** `pack_20260307T060831_1de9465d`
+**Run ID:** `trace_20260307T060831_9f640976`
 **Signed by:** `ci-assay-signer`
 
 ## Verdicts
@@ -9,7 +9,7 @@
 | Check | Result |
 |-------|--------|
 | Integrity | **PASS** |
-| Claims | **NONE** |
+| Claims | **PASSED** |
 
 ## What Happened
 
@@ -17,7 +17,7 @@
 - **Providers:** anthropic
 - **Models:** claude-sonnet-4-20250514
 - **Total tokens:** 3,934
-- **Time window:** 2026-03-07T04:34:12.595920+00:00 to 2026-03-07T04:34:12.596329+00:00
+- **Time window:** 2026-03-07T06:08:31.483376+00:00 to 2026-03-07T06:08:31.483772+00:00
 
 ## Integrity Check
 
@@ -26,11 +26,14 @@ This evidence has not been tampered with since creation.
 
 ## Claim Checks
 
-No claims were declared for this pack.
+| Claim | Result |
+|-------|--------|
+| `minimum_receipt_coverage` | **PASS** |
 
 ## What This Proves
 
 - The recorded evidence is authentic (signed, hash-verified)
+- All declared behavioral checks passed
 
 ## What This Does NOT Prove
 

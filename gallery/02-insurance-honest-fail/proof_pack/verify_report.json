@@ -1,12 +1,12 @@
 {
-  "pack_id": "pack_20260307T043413_d1ca7021",
-  "run_id": "trace_20260307T043413_1f1821dd",
+  "pack_id": "pack_20260307T060837_0fa00c86",
+  "run_id": "trace_20260307T060837_d020f6ca",
   "passed": true,
   "errors": [],
   "warnings": [],
   "receipt_count": 3,
-  "head_hash": "b54948fbe01c5e999853499f9ef6b31b3b2229ff6af86df4184fcc49a2741f59",
-  "verified_at": "2026-03-07T04:34:13.418346+00:00",
+  "head_hash": "0200b4197e7db225c6015f2a500825cae105f9ca5cb3516be952ae1768c4aaae",
+  "verified_at": "2026-03-07T06:08:37.737372+00:00",
   "verifier_version": "1.15.1",
   "claim_verification": {
     "passed": false,
