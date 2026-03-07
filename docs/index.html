@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assay Proof Gallery</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --pass: #3fb950;
+      --fail: #f85149;
+      --warn: #d29922;
+      --accent: #58a6ff;
+      --font-mono: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 860px; margin: 0 auto; }
+
+    header { margin-bottom: 3rem; }
+    header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    header p { color: var(--muted); font-size: 1rem; max-width: 560px; }
+
+    .exit-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0 2.5rem;
+      font-size: 0.875rem;
+    }
+    .exit-table th, .exit-table td {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    .exit-table th { background: var(--surface); color: var(--muted); font-weight: 600; }
+    .exit-table td:first-child { font-family: var(--font-mono); font-size: 0.8rem; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+    }
+    .badge-pass  { background: rgba(63,185,80,0.15);  color: var(--pass);  border: 1px solid rgba(63,185,80,0.3); }
+    .badge-fail  { background: rgba(248,81,73,0.15);  color: var(--fail);  border: 1px solid rgba(248,81,73,0.3); }
+    .badge-warn  { background: rgba(210,153,34,0.15); color: var(--warn);  border: 1px solid rgba(210,153,34,0.3); }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .cards { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+    .card.featured { border-color: var(--warn); }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .card-title { font-size: 1rem; font-weight: 600; }
+    .card-org { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+    .card-badges { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+    .card-desc { font-size: 0.875rem; color: var(--muted); margin-bottom: 1rem; }
+
+    .verdict-row {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 1rem;
+      font-size: 0.8rem;
+    }
+    .verdict-item { display: flex; flex-direction: column; gap: 0.15rem; }
+    .verdict-label { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .cmd-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.6rem 0.9rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #a8d8a8;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .card-links {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .card-links a {
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+    .card-links a:hover { border-color: var(--accent); }
+
+    .tamper-note {
+      margin-top: 0.85rem;
+      padding: 0.6rem 0.85rem;
+      background: rgba(210,153,34,0.08);
+      border-left: 3px solid var(--warn);
+      font-size: 0.8rem;
+      color: var(--muted);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .featured-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--warn);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+
+    footer {
+      margin-top: 3.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    @media (max-width: 540px) {
+      .card-header { flex-direction: column; }
+      .verdict-row { flex-wrap: wrap; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Assay Proof Gallery</h1>
+    <p>
+      Synthetic but real Assay artifacts. Each scenario is generated by the
+      actual toolchain and can be verified locally with the public CLI.
+      No vendor trust required.
+    </p>
+  </header>
+
+  <div class="section-label">Exit code semantics</div>
+  <table class="exit-table">
+    <thead>
+      <tr><th>Exit</th><th>Meaning</th><th>Trust interpretation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>0</td>
+        <td><span class="badge badge-pass">PASS</span></td>
+        <td>Integrity intact, all declared claims pass</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td><span class="badge badge-warn">HONEST FAIL</span></td>
+        <td>Pack intact, evidence proves a standards violation — cannot be rewritten</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><span class="badge badge-fail">TAMPERED</span></td>
+        <td>Pack bytes were altered after signing — integrity broken</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-label">Scenarios</div>
+  <div class="cards">
+
+    <!-- Scenario 03 — featured at top -->
+    <div class="card featured">
+      <div class="featured-label">Featured — tamper demo</div>
+      <div class="card-header">
+        <div>
+          <div class="card-title">DataCo Analytics — Tamper Detection</div>
+          <div class="card-org">Scenario 03</div>
+        </div>
+        <div class="card-badges">
+          <span class="badge badge-pass">exit 0</span>
+          <span style="font-size:0.75rem;color:var(--muted);align-self:center;">→ tamper →</span>
+          <span class="badge badge-fail">exit 2</span>
+        </div>
+      </div>
+      <div class="card-desc">
+        A clean proof pack is mutated (one byte changed in the receipt file).
+        The verifier catches the hash mismatch and returns exit 2 —
+        independent of any vendor system.
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-item">
+          <span class="verdict-label">Clean pack</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+        <div class="verdict-item">
+          <span class="verdict-label">Tampered pack</span>
+          <span class="badge badge-fail">INTEGRITY FAIL</span>
+        </div>
+      </div>
+      <div class="cmd-block">assay verify-pack ./gallery/03-tamper-demo/good      # exit 0
+assay verify-pack ./gallery/03-tamper-demo/tampered   # exit 2</div>
+      <div class="tamper-note">
+        The manifest and signature are unchanged. Only one byte in
+        <code>receipt_pack.jsonl</code> was altered. The SHA-256 mismatch
+        is detectable offline by anyone.
+      </div>
+      <div class="card-links">
+        <a href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/03-tamper-demo">View pack</a>
+        <a href="https://github.com/Haserjian/assay-proof-gallery/blob/main/gallery/03-tamper-demo/README.md">README</a>
+        <a href="https://github.com/Haserjian/assay-proof-gallery/blob/main/gallery/03-tamper-demo/CHALLENGE.md">Challenge details</a>
+      </div>
+    </div>
+
+    <!-- Scenario 02 -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">InsuranceTech Claims Review — Honest Fail</div>
+          <div class="card-org">Scenario 02</div>
+        </div>
+        <div class="card-badges">
+          <span class="badge badge-warn">exit 1</span>
+        </div>
+      </div>
+      <div class="card-desc">
+        The evidence is authentic. It proves the system violated its declared
+        coverage standard. The failure is sealed into the pack at runtime —
+        it cannot be edited or hidden after the fact.
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-item">
+          <span class="verdict-label">Integrity</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+        <div class="verdict-item">
+          <span class="verdict-label">Claims</span>
+          <span class="badge badge-warn">FAIL</span>
+        </div>
+        <div class="verdict-item">
+          <span class="verdict-label">Receipts</span>
+          <span style="font-size:0.85rem;">3 of 10 required</span>
+        </div>
+      </div>
+      <div class="cmd-block">assay verify-pack ./gallery/02-insurance-honest-fail/proof_pack --require-claim-pass
+# exit 1 — integrity PASS, claims FAIL</div>
+      <div class="card-links">
+        <a href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/02-insurance-honest-fail">View pack</a>
+        <a href="https://github.com/Haserjian/assay-proof-gallery/blob/main/gallery/02-insurance-honest-fail/README.md">README</a>
+      </div>
+    </div>
+
+    <!-- Scenario 01 -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">FintechCo Loan Approval — Full Pass</div>
+          <div class="card-org">Scenario 01</div>
+        </div>
+        <div class="card-badges">
+          <span class="badge badge-pass">exit 0</span>
+        </div>
+      </div>
+      <div class="card-desc">
+        5 receipts: 3 model calls, 1 guardian verdict, 1 capability use.
+        Integrity intact, all declared claims pass.
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-item">
+          <span class="verdict-label">Integrity</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+        <div class="verdict-item">
+          <span class="verdict-label">Claims</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+        <div class="verdict-item">
+          <span class="verdict-label">Receipts</span>
+          <span style="font-size:0.85rem;">5</span>
+        </div>
+      </div>
+      <div class="cmd-block">assay verify-pack ./gallery/01-fintech-pass/proof_pack
+# exit 0 — PASS</div>
+      <div class="card-links">
+        <a href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/01-fintech-pass">View pack</a>
+        <a href="https://github.com/Haserjian/assay-proof-gallery/blob/main/gallery/01-fintech-pass/README.md">README</a>
+      </div>
+    </div>
+
+  </div><!-- .cards -->
+
+  <footer>
+    <p>
+      Built with <a href="https://github.com/Haserjian/assay">Assay</a>.
+      Verified by CI on every push.
+      <a href="https://github.com/Haserjian/assay-proof-gallery/actions">View CI runs</a> &middot;
+      <a href="https://github.com/Haserjian/assay-proof-gallery">Source</a>
+    </p>
+    <p style="margin-top:0.5rem;">
+      Don't trust the screenshot. Run the verifier:
+      <code style="font-family:var(--font-mono);font-size:0.75rem;">pip install assay-ai &amp;&amp; assay verify-pack &lt;pack_dir&gt;</code>
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>

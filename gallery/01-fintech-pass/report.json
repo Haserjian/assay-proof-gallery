@@ -1,0 +1,149 @@
+{
+  "content_hash": "sha256:56b1df574bd7df9e0bcf3dccc98cf440827e02e88b56001853cee2b5417c9185",
+  "evidence_gaps": [],
+  "facts": {
+    "ci": {
+      "files": [],
+      "has_assay_ref": false,
+      "has_lock": false,
+      "has_run": false,
+      "has_verify": false,
+      "workflow_count": 0
+    },
+    "keys": {
+      "active_signer": "ci-assay-signer",
+      "signer_count": 2
+    },
+    "lockfile": {
+      "issues": [],
+      "present": false,
+      "stale": false,
+      "valid": false
+    },
+    "receipts": {
+      "mcp_session_files": 0,
+      "proof_pack_receipt_files": 0,
+      "repo_receipt_files": 0
+    },
+    "repo_path": "/Users/timmybhaserjian/assay-proof-gallery",
+    "scan": {
+      "high": 0,
+      "instrumented": 0,
+      "low": 0,
+      "medium": 0,
+      "sites_total": 0,
+      "uninstrumented": 0
+    }
+  },
+  "meta": {
+    "assay_version": "1.15.1",
+    "generated_at": "2026-03-07T04:34:13.093459+00:00",
+    "git_branch": null,
+    "git_commit": null,
+    "git_dirty": true,
+    "repo_name": "assay-proof-gallery",
+    "repo_root": "/Users/timmybhaserjian/assay-proof-gallery"
+  },
+  "score": {
+    "breakdown": {
+      "ci_gate": {
+        "evidence": {
+          "files": [],
+          "has_assay_ref": false,
+          "has_lock": false,
+          "has_run": false,
+          "has_verify": false,
+          "workflow_count": 0
+        },
+        "note": "No evidence CI gate detected.",
+        "points": 0.0,
+        "status": "fail",
+        "weight": 20
+      },
+      "coverage": {
+        "evidence": {
+          "instrumented": 0,
+          "sites_total": 0,
+          "uninstrumented": 0
+        },
+        "note": "No call sites detected by scanner; partial credit only.",
+        "points": 17.5,
+        "status": "unknown",
+        "weight": 35
+      },
+      "key_setup": {
+        "evidence": {
+          "has_signer": true,
+          "signer_count": 2
+        },
+        "note": "2 signer(s) configured.",
+        "points": 10.0,
+        "status": "pass",
+        "weight": 10
+      },
+      "lockfile": {
+        "evidence": {
+          "issues": [],
+          "present": false,
+          "stale": false,
+          "valid": false
+        },
+        "note": "No lockfile.",
+        "points": 0.0,
+        "status": "fail",
+        "weight": 15
+      },
+      "receipts": {
+        "evidence": {
+          "mcp_session_files": 0,
+          "proof_pack_receipt_files": 0,
+          "repo_receipt_files": 0
+        },
+        "note": "No repository-local receipts found.",
+        "points": 0.0,
+        "status": "fail",
+        "weight": 20
+      }
+    },
+    "caps_applied": [],
+    "disclaimer": "Evidence Readiness Score is a readiness signal, not a security guarantee.",
+    "fastest_path": {
+      "command": "assay run -c receipt_completeness -- python your_app.py",
+      "points_est": 20.0,
+      "projected_score": 47.5,
+      "target_grade": "D",
+      "target_score": 60
+    },
+    "grade": "F",
+    "grade_description": "No evidence pipeline -- most repos start here.",
+    "next_actions": [
+      "Generate first evidence pack: assay run -c receipt_completeness -- python your_app.py",
+      "Harden CI gate: assay ci init github --run-command \"python your_app.py\"",
+      "Create lockfile: assay lock init"
+    ],
+    "next_actions_detail": [
+      {
+        "action": "Generate first evidence pack",
+        "command": "assay run -c receipt_completeness -- python your_app.py",
+        "component": "receipts",
+        "points_est": 20.0
+      },
+      {
+        "action": "Harden CI gate",
+        "command": "assay ci init github --run-command \"python your_app.py\"",
+        "component": "ci_gate",
+        "points_est": 20.0
+      },
+      {
+        "action": "Create lockfile",
+        "command": "assay lock init",
+        "component": "lockfile",
+        "points_est": 15.0
+      }
+    ],
+    "raw_grade": "F",
+    "raw_score": 27.5,
+    "score": 27.5,
+    "score_version": "1.0.0"
+  }
+}

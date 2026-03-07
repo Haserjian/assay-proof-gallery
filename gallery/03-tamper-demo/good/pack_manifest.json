@@ -1,0 +1,70 @@
+{
+  "pack_id": "pack_20260307T043413_29beb004",
+  "pack_version": "0.1.0",
+  "manifest_version": "1.0.0",
+  "hash_alg": "sha256",
+  "attestation": {
+    "pack_format_version": "0.1.0",
+    "fingerprint_version": 1,
+    "pack_id": "pack_20260307T043413_29beb004",
+    "run_id": "challenge-run",
+    "suite_id": "manual",
+    "suite_hash": "36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88",
+    "verifier_version": "1.15.1",
+    "canon_version": "jcs-rfc8785",
+    "canon_impl": "receipts.jcs",
+    "canon_impl_version": "1.15.1",
+    "policy_hash": "4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f",
+    "claim_set_id": "none",
+    "claim_set_hash": "5efc5f82b53f421751fce8639b5937eb4d45bd80ab9d1f8da264e81c6b6b7cc0",
+    "receipt_integrity": "PASS",
+    "claim_check": "PASS",
+    "discrepancy_fingerprint": "fcaad82aad52a2b3552c5f56e75e36ac90346ec81c25e2b01f62485cf68aee01",
+    "assurance_level": "L0",
+    "proof_tier": "signed-pack",
+    "mode": "shadow",
+    "head_hash": "c127de94295454ff632be131ca6be013db05135e26be8fac6b0cfe47a3ff08dd",
+    "head_hash_algorithm": "last-receipt-digest-v0",
+    "time_authority": "local_clock",
+    "n_receipts": 3,
+    "timestamp_start": "2026-02-10T12:00:00Z",
+    "timestamp_end": "2026-02-10T12:00:02Z",
+    "ci_binding": null
+  },
+  "attestation_sha256": "d664115a7aaaedfb426e6de702e58052b179e8ec3d1686ca563053f24628cb2e",
+  "suite_hash": "36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88",
+  "claim_set_id": "none",
+  "claim_set_hash": "5efc5f82b53f421751fce8639b5937eb4d45bd80ab9d1f8da264e81c6b6b7cc0",
+  "receipt_count_expected": 3,
+  "files": [
+    {
+      "path": "receipt_pack.jsonl",
+      "sha256": "141dda81628bf3952c08626166dccb1b862ad499eab96aae55469652fb14b0c1",
+      "bytes": 716
+    },
+    {
+      "path": "verify_report.json",
+      "sha256": "cef0c970ee48f12a33eb207aaa81e66109f0a905cc692d88a6536237d286b23b",
+      "bytes": 1122
+    },
+    {
+      "path": "verify_transcript.md",
+      "sha256": "3adbbc734ddee25e19fd6b81ac56c3450f8c7e9627111d67b0eb56cbc84fd59e",
+      "bytes": 703
+    }
+  ],
+  "expected_files": [
+    "receipt_pack.jsonl",
+    "verify_report.json",
+    "verify_transcript.md",
+    "pack_manifest.json",
+    "pack_signature.sig"
+  ],
+  "signer_id": "challenge",
+  "signer_pubkey": "Fh8p0yd9H/TnHneaZ4EpoXlvMmlRZcG3MvTMDZhsi5U=",
+  "signer_pubkey_sha256": "5ba4db0672eee8e91ed930b6ce4c72058b3b7bc9bb070f4a58ac5ef9006b0443",
+  "signature_alg": "ed25519",
+  "signature_scope": "JCS(pack_manifest_without_signature)",
+  "signature": "Ti6lxJdOnSuIIiZJKslW3Gs4GDeDjNORHs5eTxbLAW1NJgek+93gAdWOTAs2HWqpDMyjQNfWGn3LIsSzepCvBA==",
+  "pack_root_sha256": "d664115a7aaaedfb426e6de702e58052b179e8ec3d1686ca563053f24628cb2e"
+}

@@ -1,0 +1,3 @@
+{"finish_reason":"stop","input_tokens":1800,"latency_ms":1100,"model_id":"gpt-5","output_tokens":700,"provider":"openai","receipt_id":"r_chal_001","schema_version":"3.0","seq":0,"timestamp":"2026-02-10T12:00:00Z","total_tokens":2500,"type":"model_call"}
+{"action":"generate_summary","reason":"Content is within policy bounds","receipt_id":"r_chal_002","schema_version":"3.0","seq":1,"timestamp":"2026-02-10T12:00:01Z","type":"guardian_verdict","verdict":"allow"}
+{"finish_reason":"stop","input_tokens":1300,"latency_ms":950,"model_id":"gpt-4","output_tokens":600,"provider":"openai","receipt_id":"r_chal_003","schema_version":"3.0","seq":2,"timestamp":"2026-02-10T12:00:02Z","total_tokens":1900,"type":"model_call"}

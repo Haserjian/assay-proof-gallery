@@ -1,0 +1,31 @@
+{
+  "scenarios": [
+    {
+      "id": "01-fintech-pass",
+      "description": "FintechCo loan approval AI -- all evidence present, all claims pass",
+      "expected_verification_exit_code": 0,
+      "expected_integrity": "PASS",
+      "expected_claims": "PASS",
+      "built": true,
+      "actual_exit_code": 0
+    },
+    {
+      "id": "02-insurance-honest-fail",
+      "description": "InsuranceTech claims review -- evidence intact, declared coverage claim fails",
+      "expected_verification_exit_code": 1,
+      "expected_integrity": "PASS",
+      "expected_claims": "FAIL",
+      "built": true,
+      "actual_exit_code": 1
+    },
+    {
+      "id": "03-tamper-demo",
+      "description": "DataCo analytics AI -- tampered pack (one byte changed), integrity fails",
+      "expected_verification_exit_code": 2,
+      "expected_integrity": "FAIL",
+      "expected_claims": null,
+      "built": true,
+      "actual_exit_code": 2
+    }
+  ]
+}

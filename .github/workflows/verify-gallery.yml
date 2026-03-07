@@ -1,0 +1,57 @@
+name: verify-gallery
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Verify proof pack contracts
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Assay
+        run: pip install assay-ai --quiet
+
+      - name: Check gallery contract (committed artifacts)
+        run: python scripts/check_gallery.py --verbose
+
+      - name: Rebuild gallery from source
+        run: python scripts/build_gallery.py
+
+      - name: Check gallery contract (freshly rebuilt artifacts)
+        run: python scripts/check_gallery.py --verbose
+
+      - name: Assert scenario 02 verify.sh uses --require-claim-pass
+        run: |
+          if ! grep -q '\-\-require-claim-pass' gallery/02-insurance-honest-fail/verify.sh; then
+            echo "ERROR: verify.sh for scenario 02 must use --require-claim-pass"
+            exit 1
+          fi
+          echo "OK: --require-claim-pass present in scenario 02 verify.sh"
+
+      - name: Assert tampered pack returns exit 2
+        run: |
+          set +e
+          assay verify-pack gallery/03-tamper-demo/tampered
+          EXIT=$?
+          set -e
+          if [ "$EXIT" -ne 2 ]; then
+            echo "ERROR: tampered pack returned exit $EXIT, expected 2"
+            exit 1
+          fi
+          echo "OK: tampered pack returned exit 2"
+
+      - name: Assert clean pack returns exit 0
+        run: |
+          assay verify-pack gallery/03-tamper-demo/good
+          echo "OK: clean pack returned exit 0"
