@@ -91,6 +91,23 @@ The artifacts are the product.
 
 ---
 
+## Ledger anchoring
+
+All three gallery packs (scenarios 01, 02, 03/good) are anchored in the
+[Assay public ledger](https://haserjian.github.io/assay-ledger/) with
+`witness_status: signature_verified`. The ledger records each pack's fingerprint,
+integrity result, and claim result as an independent, append-only witness.
+
+| Scenario | pack_root_sha256 | claim_check |
+|----------|-----------------|-------------|
+| 01 | `2226d98e2bc2b2f9...` | N/A |
+| 02 | `d2dfa04aed0697cf...` | **FAIL** (honest) |
+| 03/good | `d664115a7aaaedfb...` | PASS |
+
+The tampered variant of scenario 03 is not submitted. The ledger anchors the
+authentic pack; the tampered copy demonstrates local integrity detection against
+that anchored baseline.
+
 ## Install
 
 ```bash

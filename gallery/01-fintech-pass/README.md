@@ -58,6 +58,19 @@ proof_pack/
   verify_transcript.md    # Human-readable verification transcript
 ```
 
+## Ledger Anchor
+
+This pack's fingerprint is recorded in the Assay public ledger with `witness_status: signature_verified`.
+
+```
+pack_root_sha256: 2226d98e2bc2b2f93337aaf82165eb8a4089abd97533971f5d28da34693445cb
+```
+
+Verify independently: https://haserjian.github.io/assay-ledger/
+
+Search the ledger for the fingerprint above. The entry records the pack identity,
+receipt count, and integrity result at submission time — separate from this repo.
+
 ## Why This Matters
 
 A proof pack is not a report. A report is generated after the fact by the vendor.

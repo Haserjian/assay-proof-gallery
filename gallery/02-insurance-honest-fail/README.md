@@ -67,6 +67,20 @@ proof_pack/
   verify_transcript.md    # Human-readable transcript
 ```
 
+## Ledger Anchor
+
+This pack's fingerprint is recorded in the Assay public ledger with `witness_status: signature_verified`.
+The entry confirms `claim_check: FAIL` — honest failure is a first-class ledger outcome.
+
+```
+pack_root_sha256: d2dfa04aed0697cfb038fc92d7f517f9c4f2264bb131898b9aafeaddcd4d2195
+```
+
+Verify independently: https://haserjian.github.io/assay-ledger/
+
+The ledger records that this pack was witnessed with a verified Ed25519 signature,
+integrity PASS, and claims FAIL — at a specific point in time, outside this repo.
+
 ## Why This Matters
 
 The distinction between exit `1` and exit `2` is the trust model in one line:

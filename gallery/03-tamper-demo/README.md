@@ -80,6 +80,24 @@ SHA256SUMS.txt              # Checksums of both packs for reference
 CHALLENGE.md                # Technical details of the tamper applied
 ```
 
+## Ledger Anchor
+
+The **clean** pack's fingerprint is anchored in the Assay public ledger with `witness_status: signature_verified`.
+The tampered variant is intentionally not submitted — the ledger anchors the authentic pack; the tampered
+copy is a local corruption of that anchored artifact.
+
+```
+pack_root_sha256 (clean): d664115a7aaaedfb426e6de702e58052b179e8ec3d1686ca563053f24628cb2e
+```
+
+Verify independently: https://haserjian.github.io/assay-ledger/
+
+To complete the trust loop:
+
+1. Verify the clean pack locally → exit 0
+2. Verify the tampered pack locally → exit 2
+3. Look up the clean fingerprint in the ledger → confirmed externally witnessed
+
 ## Why This Matters
 
 The tamper demo makes the trust model concrete and auditable.
