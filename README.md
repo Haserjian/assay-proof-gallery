@@ -23,6 +23,8 @@ assay verify-pack ./gallery/04-mcp-notary-proxy/proof_pack   # exit 0 — MCP NO
 
 No account. No API call. No vendor-hosted logs or vendor dashboard required.
 
+**No install at all?** [Verify any proof pack in your browser](https://haserjian.github.io/assay-proof-gallery/verify.html) — client-side only, nothing uploaded.
+
 ---
 
 ## Exit code semantics
@@ -75,9 +77,11 @@ agent, the tool server, or the platform.
 
 ---
 
-## Verify locally
+## Verify
 
-Clone this repo and run:
+**Browser (zero install):** [haserjian.github.io/assay-proof-gallery/verify.html](https://haserjian.github.io/assay-proof-gallery/verify.html) — drop a proof pack folder, get a verdict. Client-side SHA-256 + Ed25519. Nothing leaves your browser.
+
+**CLI:** Clone this repo and run:
 
 ```bash
 git clone https://github.com/Haserjian/assay-proof-gallery
@@ -113,7 +117,7 @@ The artifacts are the product.
 
 ## Ledger anchoring
 
-All three gallery packs (scenarios 01, 02, 03/good) are anchored in the
+Gallery packs (scenarios 01, 02, 03/good) are anchored in the
 [Assay public ledger](https://haserjian.github.io/assay-ledger/) with
 `witness_status: signature_verified`. The ledger records each pack's fingerprint,
 integrity result, and claim result as an independent, append-only witness.
@@ -151,6 +155,7 @@ py -m pip install assay-ai
 
 ## Links
 
+[Web Verifier](https://haserjian.github.io/assay-proof-gallery/verify.html) ·
 [PyPI](https://pypi.org/project/assay-ai/) ·
 [Assay repo](https://github.com/Haserjian/assay) ·
 [CI runs](https://github.com/Haserjian/assay-proof-gallery/actions)
