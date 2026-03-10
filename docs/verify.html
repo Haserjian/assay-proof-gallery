@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assay Pack Verifier</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --green: #3fb950;
+  --red: #f85149;
+  --yellow: #d29922;
+  --blue: #58a6ff;
+  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+.container { max-width: 720px; width: 100%; }
+h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.25rem; }
+.subtitle { color: var(--text-dim); font-size: 0.875rem; margin-bottom: 2rem; }
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 1rem;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--blue);
+  background: rgba(88, 166, 255, 0.05);
+}
+.drop-zone p { color: var(--text-dim); margin-bottom: 0.5rem; }
+.drop-zone .action { color: var(--blue); font-weight: 500; }
+.file-inputs { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem; }
+.file-inputs label {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+  transition: border-color 0.2s;
+}
+.file-inputs label:hover { border-color: var(--blue); color: var(--text); }
+.file-inputs input { display: none; }
+.result { display: none; }
+.verdict-box {
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+}
+.verdict-box.pass { border-color: var(--green); background: rgba(63, 185, 80, 0.08); }
+.verdict-box.fail { border-color: var(--red); background: rgba(248, 81, 73, 0.08); }
+.verdict-box.warn { border-color: var(--yellow); background: rgba(210, 153, 34, 0.08); }
+.verdict-label {
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+.verdict-label.pass { color: var(--green); }
+.verdict-label.fail { color: var(--red); }
+.verdict-label.warn { color: var(--yellow); }
+.verdict-detail { color: var(--text-dim); font-size: 0.875rem; }
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.section h3 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-bottom: 0.75rem;
+}
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0;
+  font-size: 0.875rem;
+  font-family: var(--mono);
+  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+}
+.check-row:last-child { border-bottom: none; }
+.check-icon { font-weight: 700; width: 1.5rem; text-align: center; flex-shrink: 0; }
+.check-icon.pass { color: var(--green); }
+.check-icon.fail { color: var(--red); }
+.check-icon.skip { color: var(--yellow); }
+.check-name { flex: 1; }
+.check-detail { color: var(--text-dim); font-size: 0.75rem; }
+.meta-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+  font-size: 0.8125rem;
+}
+.meta-grid dt { color: var(--text-dim); }
+.meta-grid dd { font-family: var(--mono); word-break: break-all; }
+.footer {
+  margin-top: 2rem;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+.footer a { color: var(--blue); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+.spinner {
+  display: none;
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-dim);
+}
+.reset-btn {
+  display: none;
+  margin: 1rem auto;
+  padding: 0.5rem 1.25rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.8125rem;
+}
+.reset-btn:hover { border-color: var(--blue); color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Assay Pack Verifier</h1>
+  <p class="subtitle">Verify a proof pack in your browser. Nothing is uploaded. Everything runs locally.</p>
+
+  <div class="drop-zone" id="dropZone">
+    <p class="action">Drop proof pack files here</p>
+    <p>or use the buttons below</p>
+  </div>
+
+  <div class="file-inputs">
+    <label>Select folder<input type="file" id="folderInput" webkitdirectory></label>
+    <label>Select files<input type="file" id="fileInput" multiple></label>
+  </div>
+
+  <div class="spinner" id="spinner">Verifying...</div>
+
+  <div class="result" id="result">
+    <div class="verdict-box" id="verdictBox">
+      <div class="verdict-label" id="verdictLabel"></div>
+      <div class="verdict-detail" id="verdictDetail"></div>
+    </div>
+
+    <div class="section" id="checksSection">
+      <h3>Integrity Checks</h3>
+      <div id="checksList"></div>
+    </div>
+
+    <div class="section" id="metaSection">
+      <h3>Pack Identity</h3>
+      <dl class="meta-grid" id="metaGrid"></dl>
+    </div>
+
+    <div class="section" id="receiptsSection" style="display:none">
+      <h3>Receipts</h3>
+      <div id="receiptsList"></div>
+    </div>
+
+    <button class="reset-btn" id="resetBtn">Verify another pack</button>
+  </div>
+
+  <div class="footer">
+    <p>
+      <a href="https://github.com/Haserjian/assay-proof-gallery">Proof Gallery</a> &middot;
+      <a href="https://pypi.org/project/assay-ai/">PyPI</a> &middot;
+      <a href="https://github.com/Haserjian/assay">Assay</a>
+    </p>
+    <p style="margin-top:0.5rem">Client-side only. No data leaves your browser.</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// --- JCS (RFC 8785) ---
+function jcs(value) {
+  if (value === null) return 'null';
+  const t = typeof value;
+  if (t === 'boolean') return value.toString();
+  if (t === 'number') {
+    if (!isFinite(value)) throw new Error('Non-finite number in JCS');
+    // ES2024 JSON.stringify handles number serialization correctly for JCS
+    return JSON.stringify(value);
+  }
+  if (t === 'string') return JSON.stringify(value);
+  if (Array.isArray(value)) return '[' + value.map(jcs).join(',') + ']';
+  // Object: sort keys by Unicode code point
+  const keys = Object.keys(value).sort();
+  return '{' + keys.map(k => JSON.stringify(k) + ':' + jcs(value[k])).join(',') + '}';
+}
+
+// --- Base64 ---
+function b64ToBytes(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+// --- SHA-256 ---
+async function sha256Hex(data) {
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// --- Ed25519 verification ---
+async function verifySignature(pubkeyB64, signatureB64, message) {
+  try {
+    const pubBytes = b64ToBytes(pubkeyB64);
+    const sigBytes = b64ToBytes(signatureB64);
+    const msgBytes = new TextEncoder().encode(message);
+    const key = await crypto.subtle.importKey('raw', pubBytes, { name: 'Ed25519' }, false, ['verify']);
+    return await crypto.subtle.verify('Ed25519', key, sigBytes, msgBytes);
+  } catch (e) {
+    if (e.name === 'NotSupportedError' || e.message.includes('Ed25519') || e.message.includes('Unrecognized')) {
+      return null; // browser doesn't support Ed25519
+    }
+    return false;
+  }
+}
+
+// --- Verification engine ---
+async function verifyPack(fileIndex) {
+  const checks = [];
+  let manifest = null;
+
+  // 1. Find pack_manifest.json
+  const manifestFile = resolveManifestFile(fileIndex, 'pack_manifest.json');
+  if (!manifestFile) {
+    return { integrity: 'error', claims: null, error: 'pack_manifest.json not found in selected files.', checks: [], manifest: null };
+  }
+
+  try {
+    const manifestText = await manifestFile.text();
+    manifest = JSON.parse(manifestText);
+  } catch (e) {
+    return { integrity: 'error', claims: null, error: 'pack_manifest.json is not valid JSON.', checks: [], manifest: null };
+  }
+
+  // 2. Verify file hashes
+  let hashFailed = false;
+  const declaredFiles = manifest.files || [];
+  for (const entry of declaredFiles) {
+    const file = resolveManifestFile(fileIndex, entry.path);
+    if (!file) {
+      checks.push({ name: entry.path, status: 'fail', detail: 'file missing or ambiguous' });
+      hashFailed = true;
+      continue;
+    }
+    const data = await file.arrayBuffer();
+    const hash = await sha256Hex(data);
+    if (hash === entry.sha256) {
+      checks.push({ name: entry.path, status: 'pass', detail: `SHA-256 match (${hash.slice(0, 16)}...)` });
+    } else {
+      checks.push({ name: entry.path, status: 'fail', detail: `SHA-256 mismatch: expected ${entry.sha256.slice(0, 16)}..., got ${hash.slice(0, 16)}...` });
+      hashFailed = true;
+    }
+  }
+
+  // 3. Verify Ed25519 signature
+  const pubkey = manifest.signer_pubkey;
+  const sig = manifest.signature;
+  let sigResult = null;
+
+  if (pubkey && sig && manifest.signature_scope === 'JCS(pack_manifest_without_signature)') {
+    // Create manifest copy without signature and pack_root_sha256
+    // (pack_root_sha256 is added after signing, so it's not part of the signed content)
+    const manifestCopy = {};
+    for (const k of Object.keys(manifest)) {
+      if (k !== 'signature' && k !== 'pack_root_sha256') manifestCopy[k] = manifest[k];
+    }
+    const jcsStr = jcs(manifestCopy);
+    sigResult = await verifySignature(pubkey, sig, jcsStr);
+
+    if (sigResult === true) {
+      checks.push({ name: 'Ed25519 signature', status: 'pass', detail: `signer: ${manifest.signer_id || 'unknown'}` });
+    } else if (sigResult === false) {
+      checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'signature verification failed' });
+    } else {
+      checks.push({ name: 'Ed25519 signature', status: 'skip', detail: 'browser does not support Ed25519 (hash checks still valid)' });
+    }
+  } else {
+    checks.push({ name: 'Ed25519 signature', status: 'skip', detail: 'manifest missing signature fields' });
+  }
+
+  // 4. Parse receipts
+  let receipts = [];
+  const receiptFile = resolveManifestFile(fileIndex, 'receipt_pack.jsonl');
+  if (receiptFile) {
+    const text = await receiptFile.text();
+    for (const line of text.trim().split('\n')) {
+      if (line.trim()) {
+        try { receipts.push(JSON.parse(line)); } catch (e) { /* skip malformed */ }
+      }
+    }
+  }
+
+  // 5. Compute two-axis verdict
+  const sigFailed = checks.some(c => c.name === 'Ed25519 signature' && c.status === 'fail');
+  let integrity;
+  if (hashFailed)           integrity = 'tampered';
+  else if (sigFailed)       integrity = 'sig_invalid';
+  else if (sigResult === null) integrity = 'hash_only';
+  else                      integrity = 'pass';
+
+  // Claims axis: only meaningful if integrity passes
+  let claims = null;
+  if (integrity === 'pass' || integrity === 'hash_only') {
+    const att = manifest.attestation || {};
+    if (att.claim_check === 'FAIL') {
+      claims = 'fail';
+      checks.push({ name: 'Claim check', status: 'fail', detail: 'attestation.claim_check = FAIL (honest failure)' });
+    } else if (att.claim_check === 'PASS') {
+      claims = 'pass';
+      checks.push({ name: 'Claim check', status: 'pass', detail: 'attestation.claim_check = PASS' });
+    } else if (att.claim_check === undefined || att.claim_check === null) {
+      claims = 'pass';
+      checks.push({ name: 'Claim check', status: 'skip', detail: 'no claim_check in attestation' });
+    } else {
+      claims = 'unknown';
+      checks.push({ name: 'Claim check', status: 'skip', detail: `attestation.claim_check = ${att.claim_check}` });
+    }
+  }
+
+  return { integrity, claims, error: null, checks, manifest, receipts, sigResult };
+}
+
+// --- UI ---
+const dropZone = document.getElementById('dropZone');
+const folderInput = document.getElementById('folderInput');
+const fileInput = document.getElementById('fileInput');
+const spinner = document.getElementById('spinner');
+const result = document.getElementById('result');
+const resetBtn = document.getElementById('resetBtn');
+
+function buildFileIndex(fileList) {
+  // Build two indexes: exact relative paths and basename → [files]
+  const byPath = new Map();   // relative path → File
+  const byName = new Map();   // basename → [{ path, file }]
+
+  for (const f of fileList) {
+    let relPath = f.webkitRelativePath || f.name;
+    // Normalize: strip leading slash if present
+    if (relPath.startsWith('/')) relPath = relPath.slice(1);
+    byPath.set(relPath, f);
+
+    const basename = relPath.split('/').pop();
+    if (!byName.has(basename)) byName.set(basename, []);
+    byName.get(basename).push({ path: relPath, file: f });
+  }
+
+  return { byPath, byName };
+}
+
+function resolveManifestFile(index, manifestPath) {
+  // 1. Try exact path match (manifest declares paths like "receipt_pack.jsonl")
+  if (index.byPath.has(manifestPath)) return index.byPath.get(manifestPath);
+
+  // 2. Try matching as suffix of uploaded paths (e.g. "proof_pack/receipt_pack.jsonl")
+  for (const [uploadedPath, file] of index.byPath) {
+    if (uploadedPath.endsWith('/' + manifestPath)) return file;
+  }
+
+  // 3. Basename fallback — only if exactly one candidate
+  const basename = manifestPath.split('/').pop();
+  const candidates = index.byName.get(basename);
+  if (candidates && candidates.length === 1) return candidates[0].file;
+
+  // 4. Ambiguous or missing — fail closed
+  return null;
+}
+
+async function handleFiles(fileList) {
+  if (fileList.length === 0) return;
+
+  const fileIndex = buildFileIndex(fileList);
+
+  dropZone.style.display = 'none';
+  document.querySelector('.file-inputs').style.display = 'none';
+  spinner.style.display = 'block';
+  result.style.display = 'none';
+
+  const res = await verifyPack(fileIndex);
+
+  spinner.style.display = 'none';
+  result.style.display = 'block';
+  resetBtn.style.display = 'block';
+
+  const verdictBox = document.getElementById('verdictBox');
+  const verdictLabel = document.getElementById('verdictLabel');
+  const verdictDetail = document.getElementById('verdictDetail');
+
+  if (res.error) {
+    verdictBox.className = 'verdict-box fail';
+    verdictLabel.className = 'verdict-label fail';
+    verdictLabel.textContent = 'ERROR';
+    verdictDetail.textContent = res.error;
+    return;
+  }
+
+  // Two-axis verdict rendering
+  if (res.integrity === 'tampered') {
+    verdictBox.className = 'verdict-box fail';
+    verdictLabel.className = 'verdict-label fail';
+    verdictLabel.textContent = 'TAMPERED';
+    verdictDetail.textContent = 'File hashes do not match the manifest. This pack has been modified after signing.';
+  } else if (res.integrity === 'sig_invalid') {
+    verdictBox.className = 'verdict-box fail';
+    verdictLabel.className = 'verdict-label fail';
+    verdictLabel.textContent = 'SIGNATURE INVALID';
+    verdictDetail.textContent = 'File hashes match, but the Ed25519 signature is invalid.';
+  } else if (res.integrity === 'hash_only') {
+    // Integrity passes via hashes, but no signature support
+    if (res.claims === 'fail') {
+      verdictBox.className = 'verdict-box warn';
+      verdictLabel.className = 'verdict-label warn';
+      verdictLabel.textContent = 'HONEST FAIL';
+      verdictDetail.textContent = 'All file hashes match. The evidence is intact, but the declared claims did not pass. Signature check skipped (browser does not support Ed25519).';
+    } else {
+      verdictBox.className = 'verdict-box warn';
+      verdictLabel.className = 'verdict-label warn';
+      verdictLabel.textContent = 'HASHES PASS';
+      verdictDetail.textContent = 'All file hashes match. Signature check skipped (browser does not support Ed25519). For full verification, use: assay verify-pack';
+    }
+  } else {
+    // integrity === 'pass' — full cryptographic verification
+    if (res.claims === 'fail') {
+      verdictBox.className = 'verdict-box warn';
+      verdictLabel.className = 'verdict-label warn';
+      verdictLabel.textContent = 'HONEST FAIL';
+      verdictDetail.textContent = 'All file hashes match and the Ed25519 signature is valid. The evidence is authentic and untampered, but the declared claims did not pass. This is a sealed record of failure.';
+    } else {
+      verdictBox.className = 'verdict-box pass';
+      verdictLabel.className = 'verdict-label pass';
+      verdictLabel.textContent = 'VERIFICATION PASSED';
+      verdictDetail.textContent = 'All file hashes match and the Ed25519 signature is valid. This evidence has not been tampered with.';
+    }
+  }
+
+  // Checks list
+  const checksList = document.getElementById('checksList');
+  checksList.innerHTML = '';
+  for (const c of res.checks) {
+    const icon = c.status === 'pass' ? '\u2713' : c.status === 'fail' ? '\u2717' : '\u2014';
+    checksList.innerHTML += `<div class="check-row">
+      <span class="check-icon ${c.status}">${icon}</span>
+      <span class="check-name">${esc(c.name)}</span>
+      <span class="check-detail">${esc(c.detail)}</span>
+    </div>`;
+  }
+
+  // Pack metadata
+  const metaGrid = document.getElementById('metaGrid');
+  metaGrid.innerHTML = '';
+  if (res.manifest) {
+    const m = res.manifest;
+    const att = m.attestation || {};
+    const fields = [
+      ['Pack ID', m.pack_id],
+      ['Signer', m.signer_id],
+      ['Receipts', att.n_receipts],
+      ['Integrity', att.receipt_integrity],
+      ['Claims', att.claim_check],
+      ['Time', att.timestamp_start ? `${att.timestamp_start} \u2013 ${att.timestamp_end}` : null],
+      ['Fingerprint', m.pack_root_sha256 ? m.pack_root_sha256.slice(0, 32) + '...' : null],
+    ];
+    for (const [label, value] of fields) {
+      if (value != null) {
+        metaGrid.innerHTML += `<dt>${esc(label)}</dt><dd>${esc(String(value))}</dd>`;
+      }
+    }
+  }
+
+  // Receipts summary
+  if (res.receipts.length > 0) {
+    const receiptsSection = document.getElementById('receiptsSection');
+    receiptsSection.style.display = 'block';
+    const receiptsList = document.getElementById('receiptsList');
+    receiptsList.innerHTML = '';
+    const typeCounts = {};
+    for (const r of res.receipts) {
+      const t = r.type || 'unknown';
+      typeCounts[t] = (typeCounts[t] || 0) + 1;
+    }
+    for (const [type, count] of Object.entries(typeCounts).sort()) {
+      receiptsList.innerHTML += `<div class="check-row">
+        <span class="check-icon pass">${count}</span>
+        <span class="check-name">${esc(type)}</span>
+        <span class="check-detail">${count === 1 ? 'receipt' : 'receipts'}</span>
+      </div>`;
+    }
+    // Show tool names for MCP receipts
+    const mcpReceipts = res.receipts.filter(r => r.type === 'mcp_tool_call' && r.tool_name);
+    if (mcpReceipts.length > 0) {
+      const toolNames = mcpReceipts.map(r => r.tool_name);
+      receiptsList.innerHTML += `<div class="check-row">
+        <span class="check-icon" style="color:var(--text-dim)">&rarr;</span>
+        <span class="check-name" style="color:var(--text-dim)">tools: ${esc(toolNames.join(', '))}</span>
+        <span class="check-detail"></span>
+      </div>`;
+    }
+  }
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Event handlers
+dropZone.addEventListener('click', () => folderInput.click());
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  // Try to get files from dataTransfer
+  const items = e.dataTransfer.items;
+  if (items && items.length > 0 && items[0].webkitGetAsEntry) {
+    // Directory drop support
+    const entries = [];
+    const promises = [];
+    for (const item of items) {
+      const entry = item.webkitGetAsEntry();
+      if (entry) promises.push(readEntry(entry, entries));
+    }
+    Promise.all(promises).then(() => {
+      if (entries.length > 0) {
+        handleFiles(entries);
+      }
+    });
+  } else {
+    handleFiles(e.dataTransfer.files);
+  }
+});
+
+function readEntry(entry, results) {
+  return new Promise(resolve => {
+    if (entry.isFile) {
+      entry.file(f => {
+        // Preserve path info
+        Object.defineProperty(f, 'webkitRelativePath', { value: entry.fullPath, writable: false });
+        results.push(f);
+        resolve();
+      });
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      reader.readEntries(entries => {
+        Promise.all(entries.map(e => readEntry(e, results))).then(resolve);
+      });
+    } else {
+      resolve();
+    }
+  });
+}
+
+folderInput.addEventListener('change', e => handleFiles(e.target.files));
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+resetBtn.addEventListener('click', () => {
+  result.style.display = 'none';
+  resetBtn.style.display = 'none';
+  dropZone.style.display = '';
+  document.querySelector('.file-inputs').style.display = '';
+  folderInput.value = '';
+  fileInput.value = '';
+  document.getElementById('receiptsSection').style.display = 'none';
+});
+</script>
+
+</body>
+</html>

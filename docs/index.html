@@ -329,7 +329,7 @@
 
   <!-- ── Quick verify CTA ── -->
   <div class="quick-verify">
-    <div class="quick-verify-label">All three scenarios — copy-paste commands</div>
+    <div class="quick-verify-label">All four scenarios — copy-paste commands</div>
     <div class="quick-verify-grid">
       <div class="qv-row">
         <span class="qv-label">Clean pass</span>
@@ -346,10 +346,16 @@
         <code class="cmd-inline">assay verify-pack ./gallery/03-tamper-demo/tampered</code>
         <span class="qv-exit">→ exit 2</span>
       </div>
+      <div class="qv-row">
+        <span class="qv-label">MCP Notary</span>
+        <code class="cmd-inline">assay verify-pack ./gallery/04-mcp-notary-proxy/proof_pack</code>
+        <span class="qv-exit">→ exit 0</span>
+      </div>
     </div>
     <div class="qv-install">
       Install: <code style="font-family:var(--font-mono);">pip install assay-ai</code> &nbsp;&middot;&nbsp;
       Clone: <code style="font-family:var(--font-mono);">git clone https://github.com/Haserjian/assay-proof-gallery</code>
+      &nbsp;&middot;&nbsp; <a href="verify.html" style="color:var(--accent);text-decoration:none;">Zero-install web verifier</a>
       <br><span style="margin-top:0.35rem;display:inline-block;">Verified against the Ed25519 public key embedded in each manifest. No external keyserver, no CA.</span>
     </div>
   </div>
