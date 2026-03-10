@@ -155,6 +155,7 @@ py -m pip install assay-ai
 
 ## Links
 
+[Walkthrough](https://haserjian.github.io/assay-proof-gallery/walkthrough.html) ·
 [Web Verifier](https://haserjian.github.io/assay-proof-gallery/verify.html) ·
 [PyPI](https://pypi.org/project/assay-ai/) ·
 [Assay repo](https://github.com/Haserjian/assay) ·

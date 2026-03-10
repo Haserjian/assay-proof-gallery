@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assay — Proof Walkthrough</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --pass: #3fb950;
+      --fail: #f85149;
+      --warn: #d29922;
+      --accent: #58a6ff;
+      --font-mono: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .container { max-width: 620px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header { margin-bottom: 3rem; }
+    .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .header p { color: var(--muted); font-size: 0.875rem; }
+
+    /* ── Steps ── */
+    .step {
+      margin-bottom: 3rem;
+      position: relative;
+      padding-left: 2.5rem;
+    }
+    .step::before {
+      content: attr(data-step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      font-size: 0.8125rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      text-align: center;
+    }
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: calc(0.875rem - 1px);
+      top: 2rem;
+      bottom: -1.5rem;
+      width: 2px;
+      background: var(--border);
+    }
+    .step h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      padding-top: 0.1rem;
+    }
+    .step .note {
+      color: var(--muted);
+      font-size: 0.8125rem;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Code block ── */
+    .cmd {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      margin: 0.75rem 0;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--text);
+      position: relative;
+    }
+    .cmd .comment { color: var(--muted); }
+
+    /* ── Scenario cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+    .card-label.honest-fail { color: var(--warn); }
+    .card-label.mcp { color: var(--accent); }
+    .card-body {
+      font-size: 0.8125rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .card-exit {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .card-exit.exit-1 { color: var(--warn); }
+    .card-exit.exit-0 { color: var(--pass); }
+
+    /* ── CTA button ── */
+    .cta {
+      display: inline-block;
+      padding: 0.625rem 1.5rem;
+      background: var(--accent);
+      color: #0d1117;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border-radius: 6px;
+      text-decoration: none;
+      margin: 0.75rem 0;
+      transition: opacity 0.2s;
+    }
+    .cta:hover { opacity: 0.85; }
+
+    /* ── Anchor row ── */
+    .anchor-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 0.75rem 0;
+      font-size: 0.8125rem;
+    }
+    .anchor-row dt {
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.15rem;
+    }
+    .anchor-row dd {
+      font-family: var(--font-mono);
+      word-break: break-all;
+      margin-bottom: 0.5rem;
+    }
+    .anchor-row dd:last-child { margin-bottom: 0; }
+    .anchor-row a { color: var(--accent); text-decoration: none; }
+    .anchor-row a:hover { text-decoration: underline; }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-align: center;
+    }
+    .footer a { color: var(--accent); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 500px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>Proof walkthrough</h1>
+    <p>Four steps. Under two minutes. No account required.</p>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="step" data-step="1">
+    <h2>Run</h2>
+    <div class="cmd">pip install assay-ai
+assay try</div>
+    <p class="note">Generates sample proof packs you can inspect immediately. No API key, no config.</p>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step" data-step="2">
+    <h2>Pick a scenario</h2>
+    <div class="cards">
+      <a class="card" href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/02-insurance-honest-fail">
+        <div class="card-label honest-fail">Honest fail</div>
+        <div class="card-body">Claim fails. Integrity still verifies. The failure is sealed — it cannot be rewritten.</div>
+        <div class="card-exit exit-1">exit 1</div>
+      </a>
+      <a class="card" href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/04-mcp-notary-proxy">
+        <div class="card-label mcp">MCP proxy</div>
+        <div class="card-body">Three MCP tool calls notarized through the proxy. Every call is receipted and signed.</div>
+        <div class="card-exit exit-0">exit 0</div>
+      </a>
+    </div>
+    <div class="cmd"><span class="comment"># Honest fail — integrity passes, claim fails</span>
+assay verify-pack ./gallery/02-insurance-honest-fail/proof_pack
+
+<span class="comment"># MCP proxy — all tool calls notarized</span>
+assay verify-pack ./gallery/04-mcp-notary-proxy/proof_pack</div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step" data-step="3">
+    <h2>Verify in browser</h2>
+    <p>Drop any proof pack folder. Client-side SHA-256 + Ed25519. Nothing leaves your browser.</p>
+    <a class="cta" href="verify.html">Open web verifier</a>
+    <p class="note">Works on the packs you just generated, the gallery packs, or any Assay proof pack.</p>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="step" data-step="4">
+    <h2>Check the public anchor</h2>
+    <p>Same pack fingerprint, recorded in the public ledger as an append-only witness.</p>
+    <div class="anchor-row">
+      <dl>
+        <dt>Scenario 02 — Honest fail</dt>
+        <dd>d2dfa04aed0697cf...</dd>
+        <dt>Ledger</dt>
+        <dd><a href="https://haserjian.github.io/assay-ledger/">haserjian.github.io/assay-ledger</a></dd>
+      </dl>
+    </div>
+    <p class="note">The ledger records each pack's fingerprint, integrity result, and claim result. It is append-only and independently verifiable.</p>
+  </div>
+
+  <div class="footer">
+    <p>
+      <a href="index.html">Proof Gallery</a> &middot;
+      <a href="verify.html">Web Verifier</a> &middot;
+      <a href="https://pypi.org/project/assay-ai/">PyPI</a> &middot;
+      <a href="https://github.com/Haserjian/assay">Assay</a>
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
