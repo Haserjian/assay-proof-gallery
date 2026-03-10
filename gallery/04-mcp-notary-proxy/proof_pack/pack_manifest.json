@@ -1,0 +1,72 @@
+{
+  "pack_id": "pack_20260309T184556_aa57c49d",
+  "pack_version": "0.1.0",
+  "manifest_version": "1.0.0",
+  "hash_alg": "sha256",
+  "attestation": {
+    "pack_format_version": "0.1.0",
+    "fingerprint_version": 1,
+    "pack_id": "pack_20260309T184556_aa57c49d",
+    "run_id": "mcp_mcp_fdcedd5a824b48fb_1773081954",
+    "suite_id": "manual",
+    "suite_hash": "36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88",
+    "verifier_version": "1.16.0",
+    "canon_version": "jcs-rfc8785",
+    "canon_impl": "receipts.jcs",
+    "canon_impl_version": "1.16.0",
+    "policy_hash": "4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f",
+    "claim_set_id": "none",
+    "claim_set_hash": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe",
+    "receipt_integrity": "PASS",
+    "claim_check": "N/A",
+    "discrepancy_fingerprint": null,
+    "assurance_level": "L0",
+    "proof_tier": "signed-pack",
+    "mode": "shadow",
+    "head_hash": "1d4f8166fcfd83b38806440251b8290a25e5e1a818b8880d30985ca3085194ad",
+    "head_hash_algorithm": "last-receipt-digest-v0",
+    "time_authority": "local_clock",
+    "n_receipts": 3,
+    "timestamp_start": "2026-03-09T18:45:55.294Z",
+    "timestamp_end": "2026-03-09T18:45:55.913Z",
+    "ci_binding": null,
+    "valid_until": null,
+    "superseded_by": null
+  },
+  "attestation_sha256": "c58bd5d611e8c81c0cec47a66c02d7cd54cfb2b0bbfa138f2859abb7a4fcade8",
+  "suite_hash": "36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88",
+  "claim_set_id": "none",
+  "claim_set_hash": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe",
+  "receipt_count_expected": 3,
+  "files": [
+    {
+      "path": "receipt_pack.jsonl",
+      "sha256": "635f2065b7db61b9ef55682307da242ab4b210cd46298531701a5f6a5dd9edac",
+      "bytes": 3475
+    },
+    {
+      "path": "verify_report.json",
+      "sha256": "696ee186588274dd5577da4ab6732aa1276aa8a322a200d6088e880b550a4c48",
+      "bytes": 341
+    },
+    {
+      "path": "verify_transcript.md",
+      "sha256": "42beea1ac84cfe3e707657de99095491471437a8d452f861763320d06ac6c441",
+      "bytes": 732
+    }
+  ],
+  "expected_files": [
+    "receipt_pack.jsonl",
+    "verify_report.json",
+    "verify_transcript.md",
+    "pack_manifest.json",
+    "pack_signature.sig"
+  ],
+  "signer_id": "assay-local",
+  "signer_pubkey": "GAcrhS1xLNsHd/6QtTQae7+8ZBMM15VzZOut3lWj2yc=",
+  "signer_pubkey_sha256": "baaf5c953f29e840b0b066c420631367dd837b6992e757b9735639cabcccd13a",
+  "signature_alg": "ed25519",
+  "signature_scope": "JCS(pack_manifest_without_signature)",
+  "signature": "VDw6kyRKZRqohYaiXLWsjWCbEmFn3ROO7Z5SaTFccHAq51xkYzkUhus05LAv/UbNi9oG1GSmekYccX/SaSnWDw==",
+  "pack_root_sha256": "c58bd5d611e8c81c0cec47a66c02d7cd54cfb2b0bbfa138f2859abb7a4fcade8"
+}

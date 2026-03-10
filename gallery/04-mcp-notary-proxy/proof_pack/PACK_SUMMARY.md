@@ -1,23 +1,20 @@
 # Proof Pack Summary
 
-**Pack ID:** `pack_20260307T060838_e3df25c7`
-**Run ID:** `challenge-run`
-**Signed by:** `challenge`
+**Pack ID:** `pack_20260309T184556_aa57c49d`
+**Run ID:** `mcp_mcp_fdcedd5a824b48fb_1773081954`
+**Signed by:** `assay-local`
 
 ## Verdicts
 
 | Check | Result |
 |-------|--------|
 | Integrity | **PASS** |
-| Claims | **PASSED** |
+| Claims | **NONE** |
 
 ## What Happened
 
-- **3 receipts** recorded: 1 guardian_verdict, 2 model_call
-- **Providers:** openai
-- **Models:** gpt-4
-- **Total tokens:** 4,400
-- **Time window:** 2026-02-10T12:00:00Z to 2026-02-10T12:00:02Z
+- **3 receipts** recorded: 3 mcp_tool_call
+- **Time window:** 2026-03-09T18:45:55.294Z to 2026-03-09T18:45:55.913Z
 
 ## Integrity Check
 
@@ -26,15 +23,11 @@ This evidence has not been tampered with since creation.
 
 ## Claim Checks
 
-| Claim | Result |
-|-------|--------|
-| `has_model_calls` | **PASS** |
-| `guardian_enforced` | **PASS** |
+No claims were declared for this pack.
 
 ## What This Proves
 
 - The recorded evidence is authentic (signed, hash-verified)
-- All declared behavioral checks passed
 
 ## What This Does NOT Prove
 
@@ -47,5 +40,5 @@ This evidence has not been tampered with since creation.
 ## Verify Independently
 
 ```bash
-python3 -m pip install assay-ai && assay verify-pack ./gallery/03-tamper-demo/tampered
+python3 -m pip install assay-ai && assay verify-pack ./gallery/04-mcp-notary-proxy/proof_pack
 ```

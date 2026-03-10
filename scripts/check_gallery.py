@@ -36,6 +36,7 @@ SCENARIO_PACK_SUBPATH: dict[str, str] = {
     "01-fintech-pass": "proof_pack",
     "02-insurance-honest-fail": "proof_pack",
     "03-tamper-demo": "tampered",  # tampered is the exit-2 artifact
+    "04-mcp-notary-proxy": "proof_pack",
 }
 
 REQUIRED_PACK_FILES = [

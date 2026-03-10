@@ -6,8 +6,8 @@
       "expected_verification_exit_code": 0,
       "expected_integrity": "PASS",
       "expected_claims": "PASS",
-      "built": false,
-      "actual_exit_code": null
+      "built": true,
+      "actual_exit_code": 0
     },
     {
       "id": "02-insurance-honest-fail",
@@ -15,8 +15,8 @@
       "expected_verification_exit_code": 1,
       "expected_integrity": "PASS",
       "expected_claims": "FAIL",
-      "built": false,
-      "actual_exit_code": null
+      "built": true,
+      "actual_exit_code": 1
     },
     {
       "id": "03-tamper-demo",
@@ -26,6 +26,15 @@
       "expected_claims": null,
       "built": true,
       "actual_exit_code": 2
+    },
+    {
+      "id": "04-mcp-notary-proxy",
+      "description": "LogisticsCo supply chain agent -- MCP tool calls notarized via proxy, integrity verified",
+      "expected_verification_exit_code": 0,
+      "expected_integrity": "PASS",
+      "expected_claims": null,
+      "built": true,
+      "actual_exit_code": 0
     }
   ]
 }

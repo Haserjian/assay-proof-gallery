@@ -12,10 +12,14 @@ Usage:
 import argparse
 import json
 import os
+import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 from pathlib import Path
 
 GALLERY_ROOT = Path(__file__).parent.parent / "gallery"
@@ -41,6 +45,12 @@ SCENARIOS = {
         "description": "DataCo analytics AI -- tampered pack (one byte changed), integrity fails",
         "also_has_good": True,
     },
+    "04-mcp-notary-proxy": {
+        "exit_code": 0,
+        "integrity": "PASS",
+        "claims": None,
+        "description": "LogisticsCo supply chain agent -- MCP tool calls notarized via proxy, integrity verified",
+    },
 }
 
 
@@ -52,6 +62,27 @@ def run(cmd, cwd=None, check=True, capture=False):
         kwargs["text"] = True
     print(f"  $ {' '.join(str(c) for c in cmd)}")
     return subprocess.run(cmd, **kwargs)
+
+
+def normalize_pack_summary(pack_dir: Path, verify_subpath: str, extra_flags: str = ""):
+    """Rewrite absolute verify commands in PACK_SUMMARY.md to repo-relative paths."""
+    summary_path = pack_dir / "PACK_SUMMARY.md"
+    if not summary_path.exists():
+        return
+
+    command = f"python3 -m pip install assay-ai && assay verify-pack ./{verify_subpath}"
+    if extra_flags:
+        command += f" {extra_flags}"
+
+    text = summary_path.read_text()
+    normalized = re.sub(
+        r"python3 -m pip install assay-ai && assay verify-pack .+",
+        command,
+        text,
+        count=1,
+    )
+    if normalized != text:
+        summary_path.write_text(normalized)
 
 
 def write_fintech_agent(path: Path):
@@ -232,6 +263,7 @@ def build_scenario_01(scenario_dir: Path):
 
     # Generate HTML report
     run([ASSAY_CMD, "report", ".", "--output", str(scenario_dir / "report.html")], check=False)
+    normalize_pack_summary(pack_dir, "gallery/01-fintech-pass/proof_pack")
 
     return verify.returncode
 
@@ -271,6 +303,7 @@ def build_scenario_02(scenario_dir: Path):
     result_data = json.loads(verify.stdout) if verify.stdout.strip().startswith("{") else {}
     integrity = "PASS" if result_data.get("passed") else result_data.get("receipt_integrity", "?")
     print(f"  exit={verify.returncode}  integrity={integrity}  claims={result_data.get('claim_check','?')}")
+    normalize_pack_summary(pack_dir, "gallery/02-insurance-honest-fail/proof_pack", "--require-claim-pass")
 
     return verify.returncode
 
@@ -299,7 +332,130 @@ def build_scenario_03(scenario_dir: Path):
         capture=True,
     )
     print(f"  good exit={good_verify.returncode}  tampered exit={bad_verify.returncode}")
+    normalize_pack_summary(good_dir, "gallery/03-tamper-demo/good")
+    normalize_pack_summary(tampered_dir, "gallery/03-tamper-demo/tampered")
     return bad_verify.returncode  # tampered is the primary artifact
+
+
+def build_scenario_04(scenario_dir: Path):
+    """Scenario 04: MCP Notary Proxy (exit 0)."""
+    print("\n[04] Building MCP Notary Proxy scenario...")
+    pack_dir = scenario_dir / "proof_pack"
+    server_script = scenario_dir / "demo_server.py"
+
+    if not server_script.exists():
+        print(f"  FAIL: demo_server.py not found at {server_script}", file=sys.stderr)
+        return -1
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        audit_dir = tmp_path / "mcp_audit"
+
+        # MCP JSON-RPC requests: initialize, list tools, then 3 tool calls
+        requests = [
+            {"jsonrpc": "2.0", "method": "initialize", "id": 1,
+             "params": {"protocolVersion": "2024-11-05", "capabilities": {},
+                        "clientInfo": {"name": "gallery-client", "version": "0.1.0"}}},
+            {"jsonrpc": "2.0", "method": "notifications/initialized"},
+            {"jsonrpc": "2.0", "method": "tools/list", "id": 2, "params": {}},
+            {"jsonrpc": "2.0", "method": "tools/call", "id": 3,
+             "params": {"name": "get_weather", "arguments": {"city": "Seattle"}}},
+            {"jsonrpc": "2.0", "method": "tools/call", "id": 4,
+             "params": {"name": "check_inventory", "arguments": {"product_id": "SKU-7291"}}},
+            {"jsonrpc": "2.0", "method": "tools/call", "id": 5,
+             "params": {"name": "calculate_risk",
+                        "arguments": {"amount": 15000, "category": "international_transfer"}}},
+        ]
+
+        # Start proxy wrapping the demo MCP server
+        proc = subprocess.Popen(
+            [ASSAY_CMD, "mcp-proxy",
+             "--audit-dir", str(audit_dir),
+             "--store-args", "--store-results",
+             "--server-id", "gallery-demo-server",
+             "--", sys.executable, str(server_script)],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=str(tmp_path),
+        )
+
+        # Drain stdout/stderr in background to prevent pipe deadlock
+        stdout_buf = []
+        stderr_buf = []
+
+        def drain(pipe, buf):
+            for line in pipe:
+                buf.append(line)
+
+        t_out = threading.Thread(target=drain, args=(proc.stdout, stdout_buf), daemon=True)
+        t_err = threading.Thread(target=drain, args=(proc.stderr, stderr_buf), daemon=True)
+        t_out.start()
+        t_err.start()
+
+        # Send NDJSON requests with small delays for server processing
+        for req in requests:
+            proc.stdin.write((json.dumps(req) + "\n").encode())
+            proc.stdin.flush()
+            time.sleep(0.3)
+
+        # Close stdin to signal session end
+        proc.stdin.close()
+
+        # Wait for proxy to shut down and build pack
+        try:
+            proc.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            proc.send_signal(signal.SIGINT)
+            try:
+                proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+
+        t_out.join(timeout=5)
+        t_err.join(timeout=5)
+
+        stderr_text = b"".join(stderr_buf).decode(errors="replace").strip()
+        print(f"  proxy exit={proc.returncode}")
+        if stderr_text:
+            # Show just the pack line if present
+            for line in stderr_text.splitlines():
+                if "Pack built" in line or "error" in line.lower():
+                    print(f"  {line.strip()}")
+
+        # Find and copy the built pack
+        packs_dir = audit_dir / "packs"
+        built_pack = None
+        if packs_dir.exists():
+            pack_dirs = sorted(packs_dir.iterdir())
+            if pack_dirs:
+                built_pack = pack_dirs[-1]
+
+        if built_pack and built_pack.is_dir():
+            if pack_dir.exists():
+                shutil.rmtree(pack_dir)
+            shutil.copytree(built_pack, pack_dir)
+            print(f"  pack copied: {built_pack.name}")
+        else:
+            print("  FAIL: no proof pack produced", file=sys.stderr)
+            return -1
+
+    # Verify
+    verify = run(
+        [ASSAY_CMD, "verify-pack", str(pack_dir), "--json"],
+        check=False,
+        capture=True,
+    )
+    if verify.stdout.strip().startswith("{"):
+        result_data = json.loads(verify.stdout)
+        print(f"  exit={verify.returncode}  integrity={'PASS' if result_data.get('passed') else 'FAIL'}")
+    else:
+        print(f"  exit={verify.returncode}")
+
+    normalize_pack_summary(pack_dir, "gallery/04-mcp-notary-proxy/proof_pack")
+
+    return verify.returncode
 
 
 def write_verify_sh(scenario_dir: Path, pack_subpath: str, expected_exit: int, extra_flags: str = ""):
@@ -318,8 +474,10 @@ pip install assay-ai -q
 echo ""
 echo "Verifying {pack_subpath}..."
 echo ""
+set +e
 {verify_cmd}
 EXIT=$?
+set -e
 echo ""
 if [ $EXIT -eq {expected_exit} ]; then
   echo "✓ Got expected exit code {expected_exit} ({label})"
@@ -391,6 +549,9 @@ def main():
         elif scenario_id == "03-tamper-demo":
             exit_code = build_scenario_03(scenario_dir)
             write_verify_sh(scenario_dir, "tampered", 2)
+        elif scenario_id == "04-mcp-notary-proxy":
+            exit_code = build_scenario_04(scenario_dir)
+            write_verify_sh(scenario_dir, "proof_pack", 0)
 
         results[scenario_id] = {
             "built": True,

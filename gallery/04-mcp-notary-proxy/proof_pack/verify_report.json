@@ -1,0 +1,11 @@
+{
+  "pack_id": "pack_20260309T184556_aa57c49d",
+  "run_id": "mcp_mcp_fdcedd5a824b48fb_1773081954",
+  "passed": true,
+  "errors": [],
+  "warnings": [],
+  "receipt_count": 3,
+  "head_hash": "1d4f8166fcfd83b38806440251b8290a25e5e1a818b8880d30985ca3085194ad",
+  "verified_at": "2026-03-09T18:45:56.256097+00:00",
+  "verifier_version": "1.16.0"
+}

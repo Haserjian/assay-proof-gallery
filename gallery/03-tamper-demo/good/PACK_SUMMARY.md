@@ -47,5 +47,5 @@ This evidence has not been tampered with since creation.
 ## Verify Independently
 
 ```bash
-python3 -m pip install assay-ai && assay verify-pack /var/folders/f6/qdgmkgd166j03b200mvl854c0000gn/T/tmprt218k_w/good
+python3 -m pip install assay-ai && assay verify-pack ./gallery/03-tamper-demo/good
 ```

@@ -46,5 +46,5 @@ This evidence has not been tampered with since creation.
 ## Verify Independently
 
 ```bash
-python3 -m pip install assay-ai && assay verify-pack /Users/timmybhaserjian/assay-proof-gallery/gallery/01-fintech-pass/proof_pack
+python3 -m pip install assay-ai && assay verify-pack ./gallery/01-fintech-pass/proof_pack
 ```

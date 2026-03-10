@@ -5,8 +5,10 @@ pip install assay-ai -q
 echo ""
 echo "Verifying tampered..."
 echo ""
+set +e
 assay verify-pack ./tampered
 EXIT=$?
+set -e
 echo ""
 if [ $EXIT -eq 2 ]; then
   echo "✓ Got expected exit code 2 (INTEGRITY FAIL (tampered))"

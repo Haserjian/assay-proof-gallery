@@ -5,8 +5,10 @@ pip install assay-ai -q
 echo ""
 echo "Verifying proof_pack..."
 echo ""
+set +e
 assay verify-pack ./proof_pack --require-claim-pass
 EXIT=$?
+set -e
 echo ""
 if [ $EXIT -eq 1 ]; then
   echo "✓ Got expected exit code 1 (HONEST FAIL (claims))"

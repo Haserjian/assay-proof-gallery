@@ -50,5 +50,5 @@ This evidence has not been tampered with since creation.
 ## Verify Independently
 
 ```bash
-python3 -m pip install assay-ai && assay verify-pack /Users/timmybhaserjian/assay-proof-gallery/gallery/02-insurance-honest-fail/proof_pack
+python3 -m pip install assay-ai && assay verify-pack ./gallery/02-insurance-honest-fail/proof_pack --require-claim-pass
 ```
