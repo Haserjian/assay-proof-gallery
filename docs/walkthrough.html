@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assay — Proof Walkthrough</title>
+  <meta name="description" content="See how Assay turns an AI run into proof you can verify yourself.">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -11,260 +12,513 @@
       --bg: #0d1117;
       --surface: #161b22;
       --border: #30363d;
+      --border-dim: #21262d;
       --text: #e6edf3;
       --muted: #8b949e;
-      --pass: #3fb950;
-      --fail: #f85149;
-      --warn: #d29922;
-      --accent: #58a6ff;
-      --font-mono: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+      --dimmer: #6e7681;
+      --green: #3fb950;
+      --red: #f85149;
+      --amber: #d29922;
+      --blue: #58a6ff;
+      --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
     }
 
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
       line-height: 1.6;
-      padding: 2rem 1rem 4rem;
+      padding: 2.5rem 1rem 3rem;
     }
 
-    .container { max-width: 620px; margin: 0 auto; }
+    .container { max-width: 660px; margin: 0 auto; }
 
     /* ── Header ── */
-    .header { margin-bottom: 3rem; }
-    .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.35rem; }
-    .header p { color: var(--muted); font-size: 0.875rem; }
-
-    /* ── Steps ── */
-    .step {
-      margin-bottom: 3rem;
-      position: relative;
-      padding-left: 2.5rem;
-    }
-    .step::before {
-      content: attr(data-step);
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 1.75rem;
-      height: 1.75rem;
-      border-radius: 50%;
-      background: var(--surface);
-      border: 2px solid var(--accent);
-      color: var(--accent);
-      font-size: 0.8125rem;
+    .header { margin-bottom: 2.5rem; }
+    .header h1 {
+      font-size: 1.5rem;
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-      text-align: center;
-    }
-    .step:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      left: calc(0.875rem - 1px);
-      top: 2rem;
-      bottom: -1.5rem;
-      width: 2px;
-      background: var(--border);
-    }
-    .step h2 {
-      font-size: 1.125rem;
-      font-weight: 600;
+      letter-spacing: -0.02em;
       margin-bottom: 0.5rem;
-      padding-top: 0.1rem;
     }
-    .step .note {
+    .header-lead {
+      color: var(--text);
+      font-size: 0.9375rem;
+      max-width: 580px;
+      line-height: 1.55;
+      margin-bottom: 0.35rem;
+    }
+    .header-lead strong { color: #fff; }
+    .header-sub {
       color: var(--muted);
-      font-size: 0.8125rem;
-      margin-top: 0.5rem;
+      font-size: 0.8375rem;
+      line-height: 1.55;
+      max-width: 560px;
     }
 
-    /* ── Code block ── */
-    .cmd {
+    /* ── Sections ── */
+    .section { margin-bottom: 2.75rem; }
+    .section-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--dimmer);
+      margin-bottom: 0.875rem;
+    }
+    .section-text {
+      color: var(--muted);
+      font-size: 0.8375rem;
+      line-height: 1.55;
+      margin-bottom: 0.75rem;
+    }
+    .section-text strong { color: var(--text); }
+
+    /* ── Proof pack definition ── */
+    .pack-def {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.75rem 1rem;
-      font-family: var(--font-mono);
-      font-size: 0.8125rem;
-      margin: 0.75rem 0;
-      overflow-x: auto;
-      white-space: pre;
-      color: var(--text);
-      position: relative;
+      border-radius: 8px;
+      padding: 1.125rem 1.25rem;
     }
-    .cmd .comment { color: var(--muted); }
+    .pack-def-row {
+      display: flex;
+      gap: 0.875rem;
+      align-items: baseline;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid var(--border-dim);
+      flex-wrap: wrap;
+    }
+    .pack-def-row:last-child { border-bottom: none; }
+    .pack-def-file {
+      font-family: var(--mono);
+      font-size: 0.775rem;
+      color: #a8d8a8;
+      flex-shrink: 0;
+      min-width: 170px;
+    }
+    .pack-def-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    /* ── Verdicts ── */
+    .verdicts {
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+    .verdict-row {
+      display: flex;
+      gap: 0.875rem;
+      align-items: baseline;
+    }
+    .verdict-badge {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.175rem 0.5rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+      letter-spacing: 0.03em;
+      min-width: 95px;
+      text-align: center;
+    }
+    .verdict-badge.pass { background: rgba(63,185,80,0.12); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+    .verdict-badge.honest-fail { background: rgba(210,153,34,0.12); color: var(--amber); border: 1px solid rgba(210,153,34,0.3); }
+    .verdict-badge.tampered { background: rgba(248,81,73,0.12); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+    .verdict-text { font-size: 0.8125rem; color: var(--muted); line-height: 1.5; }
+    .verdict-text strong { color: var(--text); }
+
+    /* ── CTA ── */
+    .cta-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+    }
+    .cta-label {
+      font-size: 0.8375rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .cta {
+      display: inline-block;
+      padding: 0.5625rem 1.5rem;
+      background: var(--blue);
+      color: var(--bg);
+      font-weight: 600;
+      font-size: 0.8375rem;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .cta:hover { opacity: 0.85; }
+    .cta-note {
+      margin-top: 0.625rem;
+      font-size: 0.75rem;
+      color: var(--dimmer);
+    }
 
     /* ── Scenario cards ── */
-    .cards {
+    .scenario-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0.75rem;
       margin: 0.75rem 0;
     }
-    .card {
+    .sc-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 1rem;
+      padding: 0.875rem 1rem;
       text-decoration: none;
       color: var(--text);
-      transition: border-color 0.2s;
+      transition: border-color 0.15s;
     }
-    .card:hover { border-color: var(--accent); }
-    .card-label {
-      font-size: 0.75rem;
-      font-weight: 600;
+    .sc-card:hover { border-color: var(--blue); }
+    .sc-card.sc-pass { border-color: rgba(63, 185, 80, 0.25); }
+    .sc-card.sc-pass:hover { border-color: var(--green); }
+    .sc-card.sc-honest-fail { border-color: rgba(210, 153, 34, 0.25); }
+    .sc-card.sc-honest-fail:hover { border-color: var(--amber); }
+    .sc-card.sc-tampered { border-color: rgba(248, 81, 73, 0.25); }
+    .sc-card.sc-tampered:hover { border-color: var(--red); }
+    .sc-card-label {
+      font-size: 0.6875rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.35rem;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.3rem;
     }
-    .card-label.honest-fail { color: var(--warn); }
-    .card-label.mcp { color: var(--accent); }
-    .card-body {
-      font-size: 0.8125rem;
+    .sc-card-label.pass { color: var(--green); }
+    .sc-card-label.honest-fail { color: var(--amber); }
+    .sc-card-label.tampered { color: var(--red); }
+    .sc-card-label.mcp { color: var(--blue); }
+    .sc-card-body {
+      font-size: 0.775rem;
       color: var(--muted);
       line-height: 1.45;
     }
-    .card-exit {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      margin-top: 0.5rem;
-    }
-    .card-exit.exit-1 { color: var(--warn); }
-    .card-exit.exit-0 { color: var(--pass); }
 
-    /* ── CTA button ── */
-    .cta {
-      display: inline-block;
-      padding: 0.625rem 1.5rem;
-      background: var(--accent);
-      color: #0d1117;
-      font-weight: 600;
-      font-size: 0.875rem;
-      border-radius: 6px;
-      text-decoration: none;
-      margin: 0.75rem 0;
-      transition: opacity 0.2s;
-    }
-    .cta:hover { opacity: 0.85; }
-
-    /* ── Anchor row ── */
-    .anchor-row {
+    /* ── Code ── */
+    .cmd {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 1rem;
+      padding: 0.75rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
       margin: 0.75rem 0;
+      overflow-x: auto;
+      white-space: pre;
+      color: #a8d8a8;
+    }
+    .cmd .comment { color: var(--dimmer); }
+
+    /* ── How it works ── */
+    .how-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+    }
+    .how-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: baseline;
       font-size: 0.8125rem;
     }
-    .anchor-row dt {
-      color: var(--muted);
+    .how-num {
+      font-family: var(--mono);
       font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--dimmer);
+      flex-shrink: 0;
+      width: 1.25rem;
+      text-align: center;
+    }
+    .how-text { color: var(--muted); line-height: 1.5; }
+    .how-text strong { color: var(--text); }
+
+    /* ── Anchor ── */
+    .anchor-block {
+      background: var(--surface);
+      border: 1px solid var(--border-dim);
+      border-radius: 6px;
+      padding: 0.875rem 1rem;
+      margin: 0.75rem 0;
+      font-size: 0.775rem;
+    }
+    .anchor-block dt {
+      color: var(--dimmer);
+      font-size: 0.675rem;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 0.15rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.1rem;
     }
-    .anchor-row dd {
-      font-family: var(--font-mono);
+    .anchor-block dd {
+      font-family: var(--mono);
+      font-size: 0.75rem;
       word-break: break-all;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
     }
-    .anchor-row dd:last-child { margin-bottom: 0; }
-    .anchor-row a { color: var(--accent); text-decoration: none; }
-    .anchor-row a:hover { text-decoration: underline; }
+    .anchor-block dd:last-child { margin-bottom: 0; }
+    .anchor-block a { color: var(--blue); text-decoration: none; }
+    .anchor-block a:hover { text-decoration: underline; }
 
     /* ── Footer ── */
     .footer {
       margin-top: 3rem;
       padding-top: 1.5rem;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
+      border-top: 1px solid var(--border-dim);
+      color: var(--dimmer);
       font-size: 0.75rem;
       text-align: center;
+      line-height: 1.7;
     }
-    .footer a { color: var(--accent); text-decoration: none; }
-    .footer a:hover { text-decoration: underline; }
+    .footer a { color: var(--muted); text-decoration: none; }
+    .footer a:hover { color: var(--blue); }
 
     @media (max-width: 500px) {
-      .cards { grid-template-columns: 1fr; }
+      body { padding: 1.75rem 0.875rem 2rem; }
+      .scenario-grid { grid-template-columns: 1fr; }
+      .header h1 { font-size: 1.3rem; }
+      .pack-def-file { min-width: auto; }
     }
   </style>
 </head>
 <body>
-
 <div class="container">
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- HEADER                                                                  -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
 
   <div class="header">
     <h1>Proof walkthrough</h1>
-    <p>Four steps. Under two minutes. No account required.</p>
+    <p class="header-lead">
+      Assay is an evidence compiler. It turns an AI workflow execution into a <strong>proof pack</strong>:
+      a small folder of signed evidence files that anyone can verify.
+    </p>
+    <p class="header-sub">
+      When someone asks "can you prove it?" &mdash; this is the artifact you hand them.
+    </p>
   </div>
 
-  <!-- Step 1 -->
-  <div class="step" data-step="1">
-    <h2>Run</h2>
-    <div class="cmd">pip install assay-ai
-assay try</div>
-    <p class="note">Generates sample proof packs you can inspect immediately. No API key, no config.</p>
-  </div>
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- WHAT IS A PROOF PACK                                                    -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
 
-  <!-- Step 2 -->
-  <div class="step" data-step="2">
-    <h2>Pick a scenario</h2>
-    <div class="cards">
-      <a class="card" href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/02-insurance-honest-fail">
-        <div class="card-label honest-fail">Honest fail</div>
-        <div class="card-body">Claim fails. Integrity still verifies. The failure is sealed — it cannot be rewritten.</div>
-        <div class="card-exit exit-1">exit 1</div>
-      </a>
-      <a class="card" href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/04-mcp-notary-proxy">
-        <div class="card-label mcp">MCP proxy</div>
-        <div class="card-body">Three MCP tool calls notarized through the proxy. Every call is receipted and signed.</div>
-        <div class="card-exit exit-0">exit 0</div>
-      </a>
+  <div class="section">
+    <div class="section-label">What is a proof pack?</div>
+    <p class="section-text">
+      A proof pack is a small signed folder created from an AI workflow execution.
+      It gives another person &mdash; or another system &mdash; something concrete
+      to inspect and verify.
+    </p>
+    <div class="pack-def">
+      <div class="pack-def-row">
+        <span class="pack-def-file">receipt_pack.jsonl</span>
+        <span class="pack-def-desc">The evidence trail &mdash; line-by-line receipts of what happened: model calls, checks, verdicts.</span>
+      </div>
+      <div class="pack-def-row">
+        <span class="pack-def-file">pack_manifest.json</span>
+        <span class="pack-def-desc">The inventory sheet &mdash; lists every file and its fingerprint, plus the pack identity.</span>
+      </div>
+      <div class="pack-def-row">
+        <span class="pack-def-file">pack_signature.sig</span>
+        <span class="pack-def-desc">The digital wax seal &mdash; proves the manifest was signed and not changed afterward.</span>
+      </div>
+      <div class="pack-def-row">
+        <span class="pack-def-file">verify_report.json</span>
+        <span class="pack-def-desc">Machine-readable verdict &mdash; structured results for software and automation.</span>
+      </div>
+      <div class="pack-def-row">
+        <span class="pack-def-file">verify_transcript.md</span>
+        <span class="pack-def-desc">Human-readable summary &mdash; the same story, written for people.</span>
+      </div>
     </div>
-    <div class="cmd"><span class="comment"># Honest fail — integrity passes, claim fails</span>
-assay verify-pack ./gallery/02-insurance-honest-fail/proof_pack
+  </div>
 
-<span class="comment"># MCP proxy — all tool calls notarized</span>
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- THREE VERDICTS                                                          -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <div class="section">
+    <div class="section-label">Three verdicts</div>
+    <p class="section-text">
+      Every verification resolves to one of three verdicts.
+      The outcome is the point &mdash; not the exit code.
+    </p>
+    <div class="verdicts">
+      <div class="verdict-row">
+        <span class="verdict-badge pass">PASS</span>
+        <span class="verdict-text"><strong>Authentic evidence. Declared standards passed.</strong></span>
+      </div>
+      <div class="verdict-row">
+        <span class="verdict-badge honest-fail">HONEST FAIL</span>
+        <span class="verdict-text"><strong>Authentic evidence. Declared standards failed.</strong> The failure is sealed and cannot be rewritten after the fact.</span>
+      </div>
+      <div class="verdict-row">
+        <span class="verdict-badge tampered">TAMPERED</span>
+        <span class="verdict-text"><strong>The pack changed after signing.</strong> The evidence cannot be trusted.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- BROWSER-FIRST: TRY IT NOW                                              -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <div class="section">
+    <div class="section-label">Try it now</div>
+    <p class="section-text" style="margin-bottom: 0.75rem;">
+      You've seen the three verdicts. Now watch a real pack resolve to each one.
+    </p>
+    <div class="cta-block">
+      <p class="cta-label">
+        Verify a real sample pack in your browser. No install. Nothing uploaded.
+      </p>
+      <a class="cta" href="verify.html">Open verifier</a>
+      <p class="cta-note">
+        Click "PASS", "HONEST FAIL", or "TAMPERED" to load a sample and see the verdict instantly.
+      </p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- PICK A SCENARIO                                                         -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <div class="section">
+    <div class="section-label">Example scenarios</div>
+    <p class="section-text">
+      Four proof packs generated by the real toolchain. Each demonstrates a different outcome.
+    </p>
+
+    <div class="scenario-grid">
+
+      <a class="sc-card sc-pass" href="verify.html?sample=pass">
+        <div class="sc-card-label pass">Pass</div>
+        <div class="sc-card-body">All evidence present. All declared claims pass. This is what a clean, verifiable AI run looks like.</div>
+      </a>
+
+      <a class="sc-card sc-honest-fail" href="verify.html?sample=honest-fail">
+        <div class="sc-card-label honest-fail">Honest fail</div>
+        <div class="sc-card-body">Integrity verifies, but a declared claim fails. The failure is sealed &mdash; it cannot be rewritten.</div>
+      </a>
+
+      <a class="sc-card sc-tampered" href="verify.html?sample=tampered">
+        <div class="sc-card-label tampered">Tampered</div>
+        <div class="sc-card-body">One byte changed in the receipt file. The hash mismatch is detectable offline by anyone.</div>
+      </a>
+
+      <a class="sc-card" href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/04-mcp-notary-proxy/proof_pack" style="border-color: var(--border-dim);">
+        <div style="font-size:0.6rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.15rem;">Advanced scenario</div>
+        <div class="sc-card-label mcp">MCP Notary Proxy</div>
+        <div class="sc-card-body">Three MCP tool calls notarized. Every call receipted with arguments, results, and timing.</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- CLI PATH                                                                -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <div class="section">
+    <div class="section-label">CLI path</div>
+    <p class="section-text">
+      Install Assay to verify packs locally. Same verification logic, your own machine.
+    </p>
+    <div class="cmd">pip install assay-ai
+git clone https://github.com/Haserjian/assay-proof-gallery
+cd assay-proof-gallery</div>
+    <div class="cmd"><span class="comment"># Clean pass</span>
+assay verify-pack ./gallery/01-fintech-pass/proof_pack
+
+<span class="comment"># Honest fail — integrity passes, claim fails</span>
+assay verify-pack ./gallery/02-insurance-honest-fail/proof_pack --require-claim-pass
+
+<span class="comment"># Tampered — one byte changed</span>
+assay verify-pack ./gallery/03-tamper-demo/tampered
+
+<span class="comment"># MCP proxy — tool calls notarized</span>
 assay verify-pack ./gallery/04-mcp-notary-proxy/proof_pack</div>
   </div>
 
-  <!-- Step 3 -->
-  <div class="step" data-step="3">
-    <h2>Verify in browser</h2>
-    <p>Drop any proof pack folder. Client-side SHA-256 + Ed25519. Nothing leaves your browser.</p>
-    <a class="cta" href="verify.html">Open web verifier</a>
-    <p class="note">Works on the packs you just generated, the gallery packs, or any Assay proof pack.</p>
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- HOW VERIFICATION WORKS                                                  -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <div class="section">
+    <div class="section-label">How verification works</div>
+    <p class="section-text">
+      The verifier performs four checks. If any check fails, verification fails.
+    </p>
+    <div class="how-steps">
+      <div class="how-row">
+        <span class="how-num">1</span>
+        <span class="how-text"><strong>Every file gets a fingerprint.</strong> A SHA-256 hash. Change one byte and the fingerprint changes.</span>
+      </div>
+      <div class="how-row">
+        <span class="how-num">2</span>
+        <span class="how-text"><strong>The manifest lists the expected fingerprints.</strong> If any hash doesn't match, the file was changed.</span>
+      </div>
+      <div class="how-row">
+        <span class="how-num">3</span>
+        <span class="how-text"><strong>The manifest is digitally signed.</strong> If someone edits the manifest to cover a tamper, the signature breaks.</span>
+      </div>
+      <div class="how-row">
+        <span class="how-num">4</span>
+        <span class="how-text"><strong>The verifier checks declared standards.</strong> The attestation records whether claimed checks passed or failed at runtime.</span>
+      </div>
+    </div>
+    <p class="section-text" style="margin-top: 0.5rem;">
+      If a file was changed, the fingerprint won't match. If someone edits the manifest
+      to cover it, the signature breaks. That is how tampering is detected.
+    </p>
   </div>
 
-  <!-- Step 4 -->
-  <div class="step" data-step="4">
-    <h2>Check the public anchor</h2>
-    <p>Same pack fingerprint, recorded in the public ledger as an append-only witness.</p>
-    <div class="anchor-row">
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- PUBLIC ANCHOR (demoted)                                                 -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
+  <div class="section">
+    <div class="section-label">Public anchor</div>
+    <p class="section-text">
+      Each pack's fingerprint is recorded in a public, append-only ledger.
+      You can compare a pack against the ledger to confirm it hasn't been swapped.
+    </p>
+    <div class="anchor-block">
       <dl>
-        <dt>Scenario 02 — Honest fail</dt>
-        <dd>d2dfa04aed0697cf...</dd>
+        <dt>Scenario 01 &mdash; Pass</dt>
+        <dd>6e6b34e48dd13ae0&hellip;</dd>
+        <dt>Scenario 02 &mdash; Honest fail</dt>
+        <dd>d2dfa04aed0697cf&hellip;</dd>
+        <dt>Scenario 03 &mdash; Tamper demo (clean)</dt>
+        <dd>d664115a7aaaedfb&hellip;</dd>
         <dt>Ledger</dt>
         <dd><a href="https://haserjian.github.io/assay-ledger/">haserjian.github.io/assay-ledger</a></dd>
       </dl>
     </div>
-    <p class="note">The ledger records each pack's fingerprint, integrity result, and claim result. It is append-only and independently verifiable.</p>
   </div>
 
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- FOOTER                                                                  -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+
   <div class="footer">
-    <p>
+    <div>
       <a href="index.html">Proof Gallery</a> &middot;
-      <a href="verify.html">Web Verifier</a> &middot;
+      <a href="verify.html">Verifier</a> &middot;
       <a href="https://pypi.org/project/assay-ai/">PyPI</a> &middot;
-      <a href="https://github.com/Haserjian/assay">Assay</a>
-    </p>
+      <a href="https://github.com/Haserjian/assay">GitHub</a>
+    </div>
   </div>
 
 </div>
-
 </body>
 </html>

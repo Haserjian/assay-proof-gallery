@@ -3,224 +3,641 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Assay Pack Verifier</title>
+<title>Assay Packet Verifier</title>
+<meta name="description" content="Verify Assay proof packs and reviewer packets in your browser. Client-side verification. Nothing uploaded.">
+<meta property="og:title" content="Assay Packet Verifier">
+<meta property="og:description" content="Verify Assay proof packs and reviewer packets in your browser. Client-side verification. Nothing uploaded.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Assay Packet Verifier">
+<meta name="twitter:description" content="Verify Assay proof packs and reviewer packets in your browser. Client-side verification. Nothing uploaded.">
 <style>
 :root {
   --bg: #0d1117;
   --surface: #161b22;
+  --surface2: #1c2128;
   --border: #30363d;
+  --border-dim: #21262d;
   --text: #e6edf3;
   --text-dim: #8b949e;
+  --text-dimmer: #6e7681;
   --green: #3fb950;
+  --green-bg: rgba(63, 185, 80, 0.07);
+  --green-glow: rgba(63, 185, 80, 0.15);
   --red: #f85149;
-  --yellow: #d29922;
+  --red-bg: rgba(248, 81, 73, 0.07);
+  --amber: #d29922;
+  --amber-bg: rgba(210, 153, 34, 0.07);
+  --amber-glow: rgba(210, 153, 34, 0.15);
   --blue: #58a6ff;
-  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --blue-dim: rgba(88, 166, 255, 0.08);
+  --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  --radius: 8px;
+  --radius-sm: 6px;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem 1rem;
+  line-height: 1.6;
+  padding: 3rem 1rem 2rem;
 }
-.container { max-width: 720px; width: 100%; }
-h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.25rem; }
-.subtitle { color: var(--text-dim); font-size: 0.875rem; margin-bottom: 2rem; }
+
+.container {
+  max-width: 740px;
+  margin: 0 auto;
+}
+
+/* ── Header ── */
+.header { margin-bottom: 2.5rem; }
+
+.header h1 {
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.header .subtitle {
+  color: var(--text-dim);
+  font-size: 0.9375rem;
+  margin-bottom: 0.875rem;
+  max-width: 560px;
+}
+
+.trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-family: var(--mono);
+  color: var(--text-dimmer);
+  background: var(--surface);
+  border: 1px solid var(--border-dim);
+  border-radius: 100px;
+  padding: 0.2rem 0.75rem;
+}
+
+.trust-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  opacity: 0.8;
+}
+
+/* ── Sample strip ── */
+.sample-strip {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.sample-strip-label {
+  font-size: 0.75rem;
+  color: var(--text-dimmer);
+  margin-bottom: 0.5rem;
+}
+
+.sample-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.sample-btn {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.725rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.sample-btn.s-pass {
+  border-color: rgba(63, 185, 80, 0.35);
+  color: var(--green);
+}
+.sample-btn.s-pass:hover {
+  background: var(--green-bg);
+  box-shadow: 0 0 0 1px rgba(63, 185, 80, 0.2);
+}
+
+.sample-btn.s-honest-fail {
+  border-color: rgba(210, 153, 34, 0.35);
+  color: var(--amber);
+}
+.sample-btn.s-honest-fail:hover {
+  background: var(--amber-bg);
+  box-shadow: 0 0 0 1px rgba(210, 153, 34, 0.2);
+}
+
+.sample-btn.s-tampered {
+  border-color: rgba(248, 81, 73, 0.35);
+  color: var(--red);
+}
+.sample-btn.s-tampered:hover {
+  background: var(--red-bg);
+  box-shadow: 0 0 0 1px rgba(248, 81, 73, 0.2);
+}
+
+/* ── Drop zone ── */
+.drop-area { margin-bottom: 1.5rem; }
+
 .drop-zone {
-  border: 2px dashed var(--border);
-  border-radius: 8px;
-  padding: 3rem 2rem;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
-  margin-bottom: 1rem;
+  color: var(--text-dim);
+  font-size: 0.875rem;
 }
+
 .drop-zone:hover, .drop-zone.dragover {
   border-color: var(--blue);
-  background: rgba(88, 166, 255, 0.05);
+  background: var(--blue-dim);
+  color: var(--text);
 }
-.drop-zone p { color: var(--text-dim); margin-bottom: 0.5rem; }
-.drop-zone .action { color: var(--blue); font-weight: 500; }
-.file-inputs { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem; }
-.file-inputs label {
+
+.drop-zone-title {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  color: var(--text-dim);
+}
+
+.drop-zone-hint {
+  font-size: 0.75rem;
+  color: var(--text-dimmer);
+}
+
+.file-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.875rem;
+}
+
+.file-btn {
   display: inline-block;
-  padding: 0.5rem 1rem;
+  padding: 0.4375rem 0.875rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.8125rem;
   color: var(--text-dim);
-  transition: border-color 0.2s;
+  background: transparent;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
 }
-.file-inputs label:hover { border-color: var(--blue); color: var(--text); }
-.file-inputs input { display: none; }
-.result { display: none; }
-.verdict-box {
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid var(--border);
-}
-.verdict-box.pass { border-color: var(--green); background: rgba(63, 185, 80, 0.08); }
-.verdict-box.fail { border-color: var(--red); background: rgba(248, 81, 73, 0.08); }
-.verdict-box.warn { border-color: var(--yellow); background: rgba(210, 153, 34, 0.08); }
-.verdict-label {
-  font-size: 1.25rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.25rem;
-}
-.verdict-label.pass { color: var(--green); }
-.verdict-label.fail { color: var(--red); }
-.verdict-label.warn { color: var(--yellow); }
-.verdict-detail { color: var(--text-dim); font-size: 0.875rem; }
-.section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-}
-.section h3 {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-dim);
-  margin-bottom: 0.75rem;
-}
-.check-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0;
-  font-size: 0.875rem;
-  font-family: var(--mono);
-  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
-}
-.check-row:last-child { border-bottom: none; }
-.check-icon { font-weight: 700; width: 1.5rem; text-align: center; flex-shrink: 0; }
-.check-icon.pass { color: var(--green); }
-.check-icon.fail { color: var(--red); }
-.check-icon.skip { color: var(--yellow); }
-.check-name { flex: 1; }
-.check-detail { color: var(--text-dim); font-size: 0.75rem; }
-.meta-grid {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.25rem 1rem;
-  font-size: 0.8125rem;
-}
-.meta-grid dt { color: var(--text-dim); }
-.meta-grid dd { font-family: var(--mono); word-break: break-all; }
-.footer {
-  margin-top: 2rem;
-  text-align: center;
-  color: var(--text-dim);
-  font-size: 0.75rem;
-}
-.footer a { color: var(--blue); text-decoration: none; }
-.footer a:hover { text-decoration: underline; }
+
+.file-btn:hover { border-color: var(--blue); color: var(--text); }
+.file-inputs-hidden { display: none; }
+
+/* ── Spinner ── */
 .spinner {
   display: none;
   text-align: center;
-  padding: 2rem;
+  padding: 3rem 0;
   color: var(--text-dim);
+  font-size: 0.875rem;
 }
+
+.spinner-label {
+  margin-left: 0.75rem;
+}
+
+.spinner-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  margin: 0 2px;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.spinner-dot:nth-child(2) { animation-delay: 0.2s; }
+.spinner-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes pulse {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+/* ── Results ── */
+.result-area {
+  display: none;
+  animation: fadeUp 0.25s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Verdict card ── */
+.verdict-card {
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.verdict-card.state-pass {
+  border-color: rgba(63, 185, 80, 0.5);
+  background: var(--green-bg);
+  box-shadow: 0 0 24px var(--green-glow);
+}
+
+.verdict-card.state-honest-fail {
+  border-color: rgba(210, 153, 34, 0.5);
+  background: var(--amber-bg);
+  box-shadow: 0 0 24px var(--amber-glow);
+}
+
+.verdict-card.state-tampered {
+  border-color: rgba(248, 81, 73, 0.5);
+  background: var(--red-bg);
+}
+
+.verdict-card.state-sig-invalid {
+  border-color: rgba(248, 81, 73, 0.5);
+  background: var(--red-bg);
+}
+
+.verdict-card.state-hash-only {
+  border-color: rgba(210, 153, 34, 0.5);
+  background: var(--amber-bg);
+  box-shadow: 0 0 18px var(--amber-glow);
+}
+
+.verdict-card.state-error {
+  border-color: rgba(248, 81, 73, 0.4);
+  background: var(--red-bg);
+}
+
+.verdict-label {
+  font-size: 1.375rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.state-pass    .verdict-label { color: var(--green); }
+.state-honest-fail .verdict-label { color: var(--amber); }
+.state-tampered    .verdict-label { color: var(--red); }
+.state-sig-invalid .verdict-label { color: var(--red); }
+.state-hash-only   .verdict-label { color: var(--amber); }
+.state-error       .verdict-label { color: var(--red); }
+
+.verdict-detail {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  max-width: 580px;
+}
+
+/* Staleness indicator */
+.staleness-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  padding: 0.225rem 0.65rem;
+  border-radius: 100px;
+  margin-top: 1rem;
+  font-family: var(--mono);
+}
+
+.staleness-pill.fresh {
+  background: rgba(63, 185, 80, 0.1);
+  color: var(--green);
+  border: 1px solid rgba(63, 185, 80, 0.25);
+}
+
+.staleness-pill.warn {
+  background: rgba(210, 153, 34, 0.1);
+  color: var(--amber);
+  border: 1px solid rgba(210, 153, 34, 0.25);
+}
+
+.staleness-pill.stale {
+  background: rgba(248, 81, 73, 0.1);
+  color: var(--red);
+  border: 1px solid rgba(248, 81, 73, 0.25);
+}
+
+/* Copy button */
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.125rem;
+  padding: 0.4375rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.copy-btn:hover { border-color: var(--blue); color: var(--text); }
+
+.copy-btn svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}
+
+/* ── Sections ── */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.125rem 1.25rem;
+  margin-bottom: 0.875rem;
+}
+
+.section-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dimmer);
+  margin-bottom: 0.875rem;
+}
+
+/* Check rows */
+.check-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  padding: 0.3rem 0;
+  font-size: 0.8375rem;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.check-row:last-child { border-bottom: none; }
+
+.check-icon {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+  font-family: var(--mono);
+}
+
+.check-icon.pass { color: var(--green); }
+.check-icon.fail { color: var(--red); }
+.check-icon.skip { color: var(--amber); }
+
+.check-name { flex: 1; min-width: 0; font-family: var(--mono); color: var(--text); }
+.check-detail { color: var(--text-dim); font-size: 0.75rem; font-family: var(--mono); }
+
+/* Pack identity grid */
+.meta-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 1.25rem;
+  font-size: 0.8125rem;
+}
+
+.meta-grid dt {
+  color: var(--text-dimmer);
+  font-size: 0.75rem;
+  padding-top: 0.125rem;
+  white-space: nowrap;
+}
+
+.meta-grid dd {
+  font-family: var(--mono);
+  font-size: 0.775rem;
+  word-break: break-all;
+  color: var(--text);
+}
+
+/* Reset button */
 .reset-btn {
   display: none;
-  margin: 1rem auto;
+  margin: 1.25rem auto 0;
   padding: 0.5rem 1.25rem;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
   cursor: pointer;
   font-size: 0.8125rem;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
 }
+
 .reset-btn:hover { border-color: var(--blue); color: var(--text); }
+
+/* ── Footer ── */
+.footer {
+  margin-top: 2.5rem;
+  text-align: center;
+  color: var(--text-dimmer);
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+
+.footer a {
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.footer a:hover { color: var(--blue); }
+
+.footer-links { margin-bottom: 0.375rem; }
+.footer-links a { margin: 0 0.375rem; }
+
+.footer-version {
+  margin-top: 0.25rem;
+  color: var(--border);
+}
+
+.footer-sep {
+  color: var(--border);
+  margin: 0 0.2rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  body { padding: 1.75rem 0.875rem 1.5rem; }
+  .scenario-buttons { flex-direction: column; }
+  .scenario-btn { flex: none; }
+  .header h1 { font-size: 1.375rem; }
+  .verdict-label { font-size: 1.2rem; }
+}
 </style>
 </head>
 <body>
-
 <div class="container">
-  <h1>Assay Pack Verifier</h1>
-  <p class="subtitle">Verify a proof pack in your browser. Nothing is uploaded. Everything runs locally.</p>
 
-  <div class="drop-zone" id="dropZone">
-    <p class="action">Drop proof pack files here</p>
-    <p>or use the buttons below</p>
+  <!-- ── Header ── -->
+  <header class="header">
+    <h1>Assay Packet Verifier</h1>
+    <p class="subtitle">Verify an Assay proof pack or reviewer packet in your browser. Check whether the evidence is authentic, stale, tampered, or incomplete. Nothing is uploaded.</p>
+    <span class="trust-badge">Signed manifests &middot; file fingerprints &middot; deterministic canonicalization</span>
+  </header>
+
+  <!-- ── Drop zone ── -->
+  <div class="drop-area">
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-zone-title">Drop a reviewer packet or proof pack here</div>
+      <div class="drop-zone-hint">Folder or individual files accepted</div>
+    </div>
+    <div class="file-buttons">
+      <label class="file-btn">Select folder<input type="file" id="folderInput" webkitdirectory class="file-inputs-hidden"></label>
+      <label class="file-btn">Select files<input type="file" id="fileInput" multiple class="file-inputs-hidden"></label>
+    </div>
+    <div class="sample-strip" id="sampleHint">
+      <div class="sample-strip-label">No artifact? Try a proof-pack sample:</div>
+      <div class="sample-buttons">
+        <button class="sample-btn s-pass" onclick="loadSample('pass')">PASS</button>
+        <button class="sample-btn s-honest-fail" onclick="loadSample('honest-fail')">HONEST FAIL</button>
+        <button class="sample-btn s-tampered" onclick="loadSample('tampered')">TAMPERED</button>
+      </div>
+    </div>
   </div>
 
-  <div class="file-inputs">
-    <label>Select folder<input type="file" id="folderInput" webkitdirectory></label>
-    <label>Select files<input type="file" id="fileInput" multiple></label>
+  <!-- ── Spinner ── -->
+  <div class="spinner" id="spinner">
+    <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span>
+    <span class="spinner-label">Verifying...</span>
   </div>
 
-  <div class="spinner" id="spinner">Verifying...</div>
+  <!-- ── Results ── -->
+  <div class="result-area" id="resultArea">
 
-  <div class="result" id="result">
-    <div class="verdict-box" id="verdictBox">
+    <!-- Verdict card -->
+    <div class="verdict-card" id="verdictCard">
       <div class="verdict-label" id="verdictLabel"></div>
       <div class="verdict-detail" id="verdictDetail"></div>
+      <div id="stalenessPill"></div>
+      <button class="copy-btn" id="copyBtn" onclick="copySummary()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/>
+          <path d="M2.5 10.5V3.5a1 1 0 011-1h7"/>
+        </svg>
+        Copy verification summary
+      </button>
     </div>
 
-    <div class="section" id="checksSection">
-      <h3>Integrity Checks</h3>
+    <!-- Integrity checks -->
+    <div class="section">
+      <div class="section-title">Verification Checks</div>
       <div id="checksList"></div>
     </div>
 
-    <div class="section" id="metaSection">
-      <h3>Pack Identity</h3>
+    <!-- Pack identity -->
+    <div class="section">
+      <div class="section-title">Artifact Identity</div>
       <dl class="meta-grid" id="metaGrid"></dl>
     </div>
 
-    <div class="section" id="receiptsSection" style="display:none">
-      <h3>Receipts</h3>
+    <!-- Receipts -->
+    <div class="section" id="receiptsSection" hidden>
+      <div class="section-title" id="detailSectionTitle">Receipts</div>
       <div id="receiptsList"></div>
     </div>
 
     <button class="reset-btn" id="resetBtn">Verify another pack</button>
   </div>
 
-  <div class="footer">
-    <p>
-      <a href="index.html">Proof Gallery</a> &middot;
-      <a href="walkthrough.html">Walkthrough</a> &middot;
-      <a href="https://pypi.org/project/assay-ai/">PyPI</a> &middot;
-      <a href="https://github.com/Haserjian/assay">Assay</a>
-    </p>
-    <p style="margin-top:0.5rem">Client-side only. No data leaves your browser.</p>
-  </div>
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="index.html">Proof Gallery</a><span class="footer-sep">&middot;</span>
+      <a href="walkthrough.html">Walkthrough</a><span class="footer-sep">&middot;</span>
+      <a href="https://pypi.org/project/assay-ai/">PyPI</a><span class="footer-sep">&middot;</span>
+      <a href="https://github.com/Haserjian/assay">GitHub</a>
+    </div>
+    <div>Client-side only. No data leaves your browser.</div>
+    <div class="footer-version">Assay v1.16.0</div>
+  </footer>
+
 </div>
 
 <script>
 'use strict';
 
-// --- JCS (RFC 8785) ---
+// ── Embedded sample pack data ──────────────────────────────────────────────
+
+const SAMPLE_PACKS = {
+
+  'pass': {
+    'pack_manifest.json': JSON.stringify({"pack_id":"pack_20260307T060831_1de9465d","pack_version":"0.1.0","manifest_version":"1.0.0","hash_alg":"sha256","attestation":{"pack_format_version":"0.1.0","fingerprint_version":1,"pack_id":"pack_20260307T060831_1de9465d","run_id":"trace_20260307T060831_9f640976","suite_id":"manual","suite_hash":"36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88","verifier_version":"1.15.1","canon_version":"jcs-rfc8785","canon_impl":"receipts.jcs","canon_impl_version":"1.15.1","policy_hash":"4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f","claim_set_id":"none","claim_set_hash":"abbc9882b6cde415903178aaed71d703f59faa57e8eaba773c5846b8cfe27d7a","receipt_integrity":"PASS","claim_check":"PASS","discrepancy_fingerprint":"d281119587d420ce70ecc199f9a19c2939096713e60fd736952d621362028d74","assurance_level":"L0","proof_tier":"signed-pack","mode":"shadow","head_hash":"010e09e839a05fb4ccbf66b2e8f0dda38fed7fc60537894eace76e6a1a4ed89a","head_hash_algorithm":"last-receipt-digest-v0","time_authority":"local_clock","n_receipts":5,"timestamp_start":"2026-03-07T06:08:31.483376+00:00","timestamp_end":"2026-03-07T06:08:31.483772+00:00","ci_binding":null},"attestation_sha256":"6e6b34e48dd13ae0c93950734c6a4ab296e1320d8deee89bc47befebde32ebc8","suite_hash":"36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88","claim_set_id":"none","claim_set_hash":"abbc9882b6cde415903178aaed71d703f59faa57e8eaba773c5846b8cfe27d7a","receipt_count_expected":5,"files":[{"path":"receipt_pack.jsonl","sha256":"d79bd2e3568deb7a3476c08adb52a5fbb57de690d651925bfe5d83750d1a837a","bytes":1937},{"path":"verify_report.json","sha256":"83b423943e03bff13fedd3ffc68f08b5156d4be9bc4ee393b79a5fe9588b782f","bytes":790},{"path":"verify_transcript.md","sha256":"2560bd8815c9921135fc2dcae6b6a642e86802de5d7692e53550e6f94b22da43","bytes":744}],"expected_files":["receipt_pack.jsonl","verify_report.json","verify_transcript.md","pack_manifest.json","pack_signature.sig"],"signer_id":"ci-assay-signer","signer_pubkey":"vQOETX+XGDBhBEUwJG8vK+aG3q1TYy5+0q8j3+bzKMY=","signer_pubkey_sha256":"a211e933a251212953e8f535dc595d2c8c11545cee2f00a2ba20f4aa04e4b03d","signature_alg":"ed25519","signature_scope":"JCS(pack_manifest_without_signature)","signature":"C6tVkkb23WKEN3KeO+6r9PfQ24EOkEe/DDmL40DT0TF4JAHUG/eR/8+At6EB8YeBILKUtG+NXfg6egP2a4k/BQ==","pack_root_sha256":"6e6b34e48dd13ae0c93950734c6a4ab296e1320d8deee89bc47befebde32ebc8"}),
+
+    'receipt_pack.jsonl': '{"_stored_at":"2026-03-07T06:08:31.483383+00:00","_trace_id":"trace_20260307T060831_9f640976","input_tokens":1847,"latency_ms":1203,"model_id":"claude-sonnet-4-20250514","output_tokens":494,"provider":"anthropic","receipt_id":"r_2d3a03ae610b","schema_version":"3.0","seq":0,"task":"loan_application_analysis","timestamp":"2026-03-07T06:08:31.483376+00:00","total_tokens":2341,"type":"model_call"}\n{"_stored_at":"2026-03-07T06:08:31.483610+00:00","_trace_id":"trace_20260307T060831_9f640976","dignity_gate":"pass","parent_receipt_id":"r_2d3a03ae610b","rationale":"Authorized credit check within consent scope","receipt_id":"r_14cd53ae5dc4","risk_score":0.18,"schema_version":"3.0","seq":1,"timestamp":"2026-03-07T06:08:31.483605+00:00","tool":"credit_bureau_query","type":"guardian_verdict","verdict":"allow"}\n{"_stored_at":"2026-03-07T06:08:31.483679+00:00","_trace_id":"trace_20260307T060831_9f640976","input_tokens":743,"latency_ms":847,"model_id":"claude-sonnet-4-20250514","output_tokens":238,"provider":"anthropic","receipt_id":"r_0bac25a36851","schema_version":"3.0","seq":2,"task":"decision_synthesis","timestamp":"2026-03-07T06:08:31.483676+00:00","total_tokens":981,"type":"model_call"}\n{"_stored_at":"2026-03-07T06:08:31.483729+00:00","_trace_id":"trace_20260307T060831_9f640976","authorized":true,"capability":"file_write","parent_receipt_id":"r_0bac25a36851","receipt_id":"r_488e16007fb3","schema_version":"3.0","seq":3,"target":"/output/loan_decision.json","timestamp":"2026-03-07T06:08:31.483727+00:00","type":"capability_use"}\n{"_stored_at":"2026-03-07T06:08:31.483774+00:00","_trace_id":"trace_20260307T060831_9f640976","input_tokens":489,"latency_ms":521,"model_id":"claude-sonnet-4-20250514","output_tokens":123,"provider":"anthropic","receipt_id":"r_13b2f9b893ba","schema_version":"3.0","seq":4,"task":"adverse_action_explanation","timestamp":"2026-03-07T06:08:31.483772+00:00","total_tokens":612,"type":"model_call"}\n',
+
+    'verify_report.json': '{\n  "pack_id": "pack_20260307T060831_1de9465d",\n  "run_id": "trace_20260307T060831_9f640976",\n  "passed": true,\n  "errors": [],\n  "warnings": [],\n  "receipt_count": 5,\n  "head_hash": "010e09e839a05fb4ccbf66b2e8f0dda38fed7fc60537894eace76e6a1a4ed89a",\n  "verified_at": "2026-03-07T06:08:31.501873+00:00",\n  "verifier_version": "1.15.1",\n  "claim_verification": {\n    "passed": true,\n    "n_claims": 1,\n    "n_passed": 1,\n    "n_failed": 0,\n    "discrepancy_fingerprint": "d281119587d420ce70ecc199f9a19c2939096713e60fd736952d621362028d74",\n    "results": [\n      {\n        "claim_id": "minimum_receipt_coverage",\n        "passed": true,\n        "expected": ">= 3 receipts",\n        "actual": "5 receipts",\n        "severity": "critical",\n        "evidence_receipt_ids": []\n      }\n    ]\n  }\n}',
+
+    'verify_transcript.md': '# Proof Pack Verification Transcript\n\n## Attestation\n\n| Field | Value |\n|-------|-------|\n| Pack ID | `pack_20260307T060831_1de9465d` |\n| Run ID | `trace_20260307T060831_9f640976` |\n| Receipt Integrity | **PASS** |\n| Claim Check | PASS |\n| Assurance Level | L0 |\n| Mode | shadow |\n| Receipts | 5 |\n| Head Hash | `010e09e839a05fb4ccbf66b2e8f0dda38fed7fc60537894eace76e6a1a4ed89a` |\n| Policy Hash | `4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f` |\n| Suite ID | `manual` |\n| Time Range | 2026-03-07T06:08:31.483376+00:00 to 2026-03-07T06:08:31.483772+00:00 |\n\n## Verification Errors\n\nNone\n\n## Verification Warnings\n\nNone\n\n---\nGenerated by Assay 1.15.1 at 2026-03-07T06:08:31.502019+00:00\nVerify: `assay verify-pack <pack_dir>`\n'
+  },
+
+  'honest-fail': {
+    'pack_manifest.json': JSON.stringify({"pack_id":"pack_20260307T060837_0fa00c86","pack_version":"0.1.0","manifest_version":"1.0.0","hash_alg":"sha256","attestation":{"pack_format_version":"0.1.0","fingerprint_version":1,"pack_id":"pack_20260307T060837_0fa00c86","run_id":"trace_20260307T060837_d020f6ca","suite_id":"manual","suite_hash":"36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88","verifier_version":"1.15.1","canon_version":"jcs-rfc8785","canon_impl":"receipts.jcs","canon_impl_version":"1.15.1","policy_hash":"4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f","claim_set_id":"none","claim_set_hash":"d58ee4af712e280d457155e3a18db46ae902d7c9780fa5a780dd3fb19cc1a738","receipt_integrity":"PASS","claim_check":"FAIL","discrepancy_fingerprint":"42c3bd9106f409f3402987f0077c3935f53bf33ffc746762fa75d8cc953337eb","assurance_level":"L0","proof_tier":"signed-pack","mode":"shadow","head_hash":"0200b4197e7db225c6015f2a500825cae105f9ca5cb3516be952ae1768c4aaae","head_hash_algorithm":"last-receipt-digest-v0","time_authority":"local_clock","n_receipts":3,"timestamp_start":"2026-03-07T06:08:37.721090+00:00","timestamp_end":"2026-03-07T06:08:37.721796+00:00","ci_binding":null},"attestation_sha256":"bc9fee15d819fc3ee5681e5234a58a1b5c765813b71621e469d0d753ae158f85","suite_hash":"36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88","claim_set_id":"none","claim_set_hash":"d58ee4af712e280d457155e3a18db46ae902d7c9780fa5a780dd3fb19cc1a738","receipt_count_expected":3,"files":[{"path":"receipt_pack.jsonl","sha256":"e4de561945fc1e0b2139fc9200480cdf7e2d55edf0a93a66c9eaa8de187e48e1","bytes":1196},{"path":"verify_report.json","sha256":"66bd1db2b5169af92c4caaf0306c2a27d29b2192996e4914900a19b2f78d8517","bytes":793},{"path":"verify_transcript.md","sha256":"380e64cfff82dac0c2cf832720bc451816b5aa424fec18bd533845b4f1716ecf","bytes":744}],"expected_files":["receipt_pack.jsonl","verify_report.json","verify_transcript.md","pack_manifest.json","pack_signature.sig"],"signer_id":"ci-assay-signer","signer_pubkey":"vQOETX+XGDBhBEUwJG8vK+aG3q1TYy5+0q8j3+bzKMY=","signer_pubkey_sha256":"a211e933a251212953e8f535dc595d2c8c11545cee2f00a2ba20f4aa04e4b03d","signature_alg":"ed25519","signature_scope":"JCS(pack_manifest_without_signature)","signature":"PIk5O1LFWxbsLcDL32X9SVdwJeZfMI4XqPqWSAkgoGNtPv9FL8HjguoHF6G+S6tlWxPS05A+s68vTFz1RCJUBg==","pack_root_sha256":"bc9fee15d819fc3ee5681e5234a58a1b5c765813b71621e469d0d753ae158f85"}),
+
+    'receipt_pack.jsonl': '{"_stored_at":"2026-03-07T06:08:37.721095+00:00","_trace_id":"trace_20260307T060837_d020f6ca","input_tokens":1401,"latency_ms":1089,"model_id":"claude-sonnet-4-20250514","output_tokens":422,"provider":"anthropic","receipt_id":"r_db7d9c01758a","schema_version":"3.0","seq":0,"task":"claims_document_review","timestamp":"2026-03-07T06:08:37.721090+00:00","total_tokens":1823,"type":"model_call"}\n{"_stored_at":"2026-03-07T06:08:37.721366+00:00","_trace_id":"trace_20260307T060837_d020f6ca","dignity_gate":"pass","parent_receipt_id":"r_db7d9c01758a","rationale":"Read-only access to authorized claims data","receipt_id":"r_b9ef7b075dcb","risk_score":0.09,"schema_version":"3.0","seq":1,"timestamp":"2026-03-07T06:08:37.721362+00:00","tool":"claims_database_read","type":"guardian_verdict","verdict":"allow"}\n{"_stored_at":"2026-03-07T06:08:37.721801+00:00","_trace_id":"trace_20260307T060837_d020f6ca","input_tokens":612,"latency_ms":634,"model_id":"claude-sonnet-4-20250514","output_tokens":132,"provider":"anthropic","receipt_id":"r_c309e77de382","schema_version":"3.0","seq":2,"task":"coverage_determination","timestamp":"2026-03-07T06:08:37.721796+00:00","total_tokens":744,"type":"model_call"}\n',
+
+    'verify_report.json': '{\n  "pack_id": "pack_20260307T060837_0fa00c86",\n  "run_id": "trace_20260307T060837_d020f6ca",\n  "passed": true,\n  "errors": [],\n  "warnings": [],\n  "receipt_count": 3,\n  "head_hash": "0200b4197e7db225c6015f2a500825cae105f9ca5cb3516be952ae1768c4aaae",\n  "verified_at": "2026-03-07T06:08:37.737372+00:00",\n  "verifier_version": "1.15.1",\n  "claim_verification": {\n    "passed": false,\n    "n_claims": 1,\n    "n_passed": 0,\n    "n_failed": 1,\n    "discrepancy_fingerprint": "42c3bd9106f409f3402987f0077c3935f53bf33ffc746762fa75d8cc953337eb",\n    "results": [\n      {\n        "claim_id": "minimum_receipt_coverage",\n        "passed": false,\n        "expected": ">= 10 receipts",\n        "actual": "3 receipts",\n        "severity": "critical",\n        "evidence_receipt_ids": []\n      }\n    ]\n  }\n}',
+
+    'verify_transcript.md': '# Proof Pack Verification Transcript\n\n## Attestation\n\n| Field | Value |\n|-------|-------|\n| Pack ID | `pack_20260307T060837_0fa00c86` |\n| Run ID | `trace_20260307T060837_d020f6ca` |\n| Receipt Integrity | **PASS** |\n| Claim Check | FAIL |\n| Assurance Level | L0 |\n| Mode | shadow |\n| Receipts | 3 |\n| Head Hash | `0200b4197e7db225c6015f2a500825cae105f9ca5cb3516be952ae1768c4aaae` |\n| Policy Hash | `4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f` |\n| Suite ID | `manual` |\n| Time Range | 2026-03-07T06:08:37.721090+00:00 to 2026-03-07T06:08:37.721796+00:00 |\n\n## Verification Errors\n\nNone\n\n## Verification Warnings\n\nNone\n\n---\nGenerated by Assay 1.15.1 at 2026-03-07T06:08:37.737506+00:00\nVerify: `assay verify-pack <pack_dir>`\n'
+  },
+
+  'tampered': {
+    'pack_manifest.json': JSON.stringify({"pack_id":"pack_20260307T060838_e3df25c7","pack_version":"0.1.0","manifest_version":"1.0.0","hash_alg":"sha256","attestation":{"pack_format_version":"0.1.0","fingerprint_version":1,"pack_id":"pack_20260307T060838_e3df25c7","run_id":"challenge-run","suite_id":"manual","suite_hash":"36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88","verifier_version":"1.15.1","canon_version":"jcs-rfc8785","canon_impl":"receipts.jcs","canon_impl_version":"1.15.1","policy_hash":"4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f","claim_set_id":"none","claim_set_hash":"5efc5f82b53f421751fce8639b5937eb4d45bd80ab9d1f8da264e81c6b6b7cc0","receipt_integrity":"PASS","claim_check":"PASS","discrepancy_fingerprint":"fcaad82aad52a2b3552c5f56e75e36ac90346ec81c25e2b01f62485cf68aee01","assurance_level":"L0","proof_tier":"signed-pack","mode":"shadow","head_hash":"c127de94295454ff632be131ca6be013db05135e26be8fac6b0cfe47a3ff08dd","head_hash_algorithm":"last-receipt-digest-v0","time_authority":"local_clock","n_receipts":3,"timestamp_start":"2026-02-10T12:00:00Z","timestamp_end":"2026-02-10T12:00:02Z","ci_binding":null},"attestation_sha256":"a2d765a879f764715157795cb92d725525aea6eca0c91d91f1af32015e43aa9a","suite_hash":"36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88","claim_set_id":"none","claim_set_hash":"5efc5f82b53f421751fce8639b5937eb4d45bd80ab9d1f8da264e81c6b6b7cc0","receipt_count_expected":3,"files":[{"path":"receipt_pack.jsonl","sha256":"141dda81628bf3952c08626166dccb1b862ad499eab96aae55469652fb14b0c1","bytes":716},{"path":"verify_report.json","sha256":"1571f55afd7cc5ff50ff69f6a53d89799c6f3e5ed003aa0320318630b1a273c8","bytes":1122},{"path":"verify_transcript.md","sha256":"6d7754c52110ff68b419a58f4b5b7056830e4ccf96355d5ce74bf4cdd929b6cf","bytes":703}],"expected_files":["receipt_pack.jsonl","verify_report.json","verify_transcript.md","pack_manifest.json","pack_signature.sig"],"signer_id":"challenge","signer_pubkey":"ssngWYgZQTeHGtv33fpCb6CbpKd94avReArBeJSpBc4=","signer_pubkey_sha256":"05a25e3cade8691dd3d1d6880ba4d504a90a62f49ed367a2b0a66c491e042e49","signature_alg":"ed25519","signature_scope":"JCS(pack_manifest_without_signature)","signature":"iQfu/yq+NQ9LwqaUw2v9tQyYo7GGG0JgU+TCq6LYq5rADrghKPg5Kg6Gnb9tFVYXH0TolHfleNzyAJGluMoWDg==","pack_root_sha256":"a2d765a879f764715157795cb92d725525aea6eca0c91d91f1af32015e43aa9a"}),
+
+    // This content does NOT match the sha256 in the manifest — intentional tamper demo
+    'receipt_pack.jsonl': '{"finish_reason":"stop","input_tokens":1800,"latency_ms":1100,"model_id":"gpt-5","output_tokens":700,"provider":"openai","receipt_id":"r_chal_001","schema_version":"3.0","seq":0,"timestamp":"2026-02-10T12:00:00Z","total_tokens":2500,"type":"model_call"}\n{"action":"generate_summary","reason":"Content is within policy bounds","receipt_id":"r_chal_002","schema_version":"3.0","seq":1,"timestamp":"2026-02-10T12:00:01Z","type":"guardian_verdict","verdict":"allow"}\n{"finish_reason":"stop","input_tokens":1300,"latency_ms":950,"model_id":"gpt-4","output_tokens":600,"provider":"openai","receipt_id":"r_chal_003","schema_version":"3.0","seq":2,"timestamp":"2026-02-10T12:00:02Z","total_tokens":1900,"type":"model_call"}\n',
+
+    'verify_report.json': '{\n  "pack_id": "pack_20260307T060838_e3df25c7",\n  "run_id": "challenge-run",\n  "passed": true,\n  "errors": [],\n  "warnings": [],\n  "receipt_count": 3,\n  "head_hash": "c127de94295454ff632be131ca6be013db05135e26be8fac6b0cfe47a3ff08dd",\n  "verified_at": "2026-03-07T06:08:38.221097+00:00",\n  "verifier_version": "1.15.1",\n  "claim_verification": {\n    "passed": true,\n    "n_claims": 2,\n    "n_passed": 2,\n    "n_failed": 0,\n    "discrepancy_fingerprint": "fcaad82aad52a2b3552c5f56e75e36ac90346ec81c25e2b01f62485cf68aee01",\n    "results": [\n      {\n        "claim_id": "has_model_calls",\n        "passed": true,\n        "expected": "at least 1 receipt of type \'model_call\'",\n        "actual": "found 2",\n        "severity": "critical",\n        "evidence_receipt_ids": [\n          "r_chal_001",\n          "r_chal_003"\n        ]\n      },\n      {\n        "claim_id": "guardian_enforced",\n        "passed": true,\n        "expected": "at least 1 receipt of type \'guardian_verdict\'",\n        "actual": "found 1",\n        "severity": "critical",\n        "evidence_receipt_ids": [\n          "r_chal_002"\n        ]\n      }\n    ]\n  }\n}',
+
+    'verify_transcript.md': '# Proof Pack Verification Transcript\n\n## Attestation\n\n| Field | Value |\n|-------|-------|\n| Pack ID | `pack_20260307T060838_e3df25c7` |\n| Run ID | `challenge-run` |\n| Receipt Integrity | **PASS** |\n| Claim Check | PASS |\n| Assurance Level | L0 |\n| Mode | shadow |\n| Receipts | 3 |\n| Head Hash | `c127de94295454ff632be131ca6be013db05135e26be8fac6b0cfe47a3ff08dd` |\n| Policy Hash | `4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f` |\n| Suite ID | `manual` |\n| Time Range | 2026-02-10T12:00:00Z to 2026-02-10T12:00:02Z |\n\n## Verification Errors\n\nNone\n\n## Verification Warnings\n\nNone\n\n---\nGenerated by Assay 1.15.1 at 2026-03-07T06:08:38.221243+00:00\nVerify: `assay verify-pack <pack_dir>`\n'
+  }
+};
+
+// ── JCS (RFC 8785) ─────────────────────────────────────────────────────────
+
 function jcs(value) {
   if (value === null) return 'null';
   const t = typeof value;
   if (t === 'boolean') return value.toString();
   if (t === 'number') {
     if (!isFinite(value)) throw new Error('Non-finite number in JCS');
-    // ES2024 JSON.stringify handles number serialization correctly for JCS
     return JSON.stringify(value);
   }
   if (t === 'string') return JSON.stringify(value);
   if (Array.isArray(value)) return '[' + value.map(jcs).join(',') + ']';
-  // Object: sort keys by Unicode code point
   const keys = Object.keys(value).sort();
   return '{' + keys.map(k => JSON.stringify(k) + ':' + jcs(value[k])).join(',') + '}';
 }
 
-// --- Base64 ---
+// ── Base64 ─────────────────────────────────────────────────────────────────
+
 function b64ToBytes(b64) {
   const bin = atob(b64);
   const bytes = new Uint8Array(bin.length);
@@ -228,13 +645,15 @@ function b64ToBytes(b64) {
   return bytes;
 }
 
-// --- SHA-256 ---
+// ── SHA-256 ────────────────────────────────────────────────────────────────
+
 async function sha256Hex(data) {
   const buf = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// --- Ed25519 verification ---
+// ── Ed25519 ────────────────────────────────────────────────────────────────
+
 async function verifySignature(pubkeyB64, signatureB64, message) {
   try {
     const pubBytes = b64ToBytes(pubkeyB64);
@@ -244,97 +663,380 @@ async function verifySignature(pubkeyB64, signatureB64, message) {
     return await crypto.subtle.verify('Ed25519', key, sigBytes, msgBytes);
   } catch (e) {
     if (e.name === 'NotSupportedError' || e.message.includes('Ed25519') || e.message.includes('Unrecognized')) {
-      return null; // browser doesn't support Ed25519
+      return null; // browser does not support Ed25519
     }
     return false;
   }
 }
 
-// --- Verification engine ---
-async function verifyPack(fileIndex) {
-  const checks = [];
-  let manifest = null;
+// ── File index ─────────────────────────────────────────────────────────────
 
-  // 1. Find pack_manifest.json
-  const manifestFile = resolveManifestFile(fileIndex, 'pack_manifest.json');
+function buildFileIndex(fileList) {
+  const byPath = new Map();
+  const byName = new Map();
+  for (const f of fileList) {
+    let relPath = f.webkitRelativePath || f.name;
+    if (relPath.startsWith('/')) relPath = relPath.slice(1);
+    byPath.set(relPath, f);
+    const basename = relPath.split('/').pop();
+    if (!byName.has(basename)) byName.set(basename, []);
+    byName.get(basename).push({ path: relPath, file: f });
+  }
+  return { byPath, byName };
+}
+
+function resolveManifestFile(index, manifestPath) {
+  if (index.byPath.has(manifestPath)) return index.byPath.get(manifestPath);
+  for (const [uploadedPath, file] of index.byPath) {
+    if (uploadedPath.endsWith('/' + manifestPath)) return file;
+  }
+  const basename = manifestPath.split('/').pop();
+  const candidates = index.byName.get(basename);
+  if (candidates && candidates.length === 1) return candidates[0].file;
+  return null;
+}
+
+// ── Verification engine ────────────────────────────────────────────────────
+
+const REVIEWER_REQUIRED_FILES = [
+  'SETTLEMENT.json',
+  'SCOPE_MANIFEST.json',
+  'COVERAGE_MATRIX.md',
+  'PACKET_INPUTS.json',
+  'PACKET_MANIFEST.json',
+];
+const COVERAGE_COLUMNS = ['Claim / Question', 'Status', 'Evidence', 'Scope', 'Notes'];
+
+function hasFile(fileIndex, path) {
+  return !!resolveManifestFile(fileIndex, path);
+}
+
+function packRoot(manifestPath) {
+  const parts = manifestPath.split('/');
+  parts.pop();
+  return parts.join('/');
+}
+
+function prefixedPath(root, relativePath) {
+  return root ? `${root}/${relativePath}` : relativePath;
+}
+
+async function readTextFile(fileIndex, path) {
+  const file = resolveManifestFile(fileIndex, path);
+  if (!file) throw new Error(`${path} not found in selected files.`);
+  return await file.text();
+}
+
+async function readBytesFile(fileIndex, path) {
+  const file = resolveManifestFile(fileIndex, path);
+  if (!file) throw new Error(`${path} not found in selected files.`);
+  return new Uint8Array(await file.arrayBuffer());
+}
+
+async function readJsonFile(fileIndex, path) {
+  const text = await readTextFile(fileIndex, path);
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    throw new Error(`${path} is not valid JSON.`);
+  }
+}
+
+function normalizeRelativePath(rawPath) {
+  const value = String(rawPath || './proof_pack').replace(/^\.\//, '').replace(/^\//, '');
+  if (!value || value.split('/').includes('..')) throw new Error(`invalid reviewer packet path: ${rawPath}`);
+  return value;
+}
+
+function parseIso(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function parsePeriodDays(period) {
+  const value = String(period || '').trim().toUpperCase();
+  if (!/^P\d+D$/.test(value)) throw new Error(`unsupported period: ${period}`);
+  return Number(value.slice(1, -1));
+}
+
+function addPeriodDays(timestamp, period) {
+  const base = parseIso(timestamp);
+  if (!base) throw new Error(`invalid timestamp: ${timestamp}`);
+  const next = new Date(base.getTime() + parsePeriodDays(period) * 24 * 60 * 60 * 1000);
+  return next.toISOString().replace('.000Z', 'Z');
+}
+
+function freshnessState(packetTime, evidenceTime, staleAfter) {
+  if (!staleAfter) return 'FRESH';
+  const packetDate = parseIso(packetTime);
+  const evidenceDate = parseIso(evidenceTime);
+  if (!packetDate || !evidenceDate) return 'STALE';
+  const deltaMs = packetDate.getTime() - evidenceDate.getTime();
+  return deltaMs > parsePeriodDays(staleAfter) * 24 * 60 * 60 * 1000 ? 'STALE' : 'FRESH';
+}
+
+function deriveEffectiveFreshnessState(packetTime, expiresAt, evidenceTime, staleAfter) {
+  if (!parseIso(packetTime) || !parseIso(evidenceTime)) return 'STALE';
+  if (freshnessState(packetTime, evidenceTime, staleAfter) === 'STALE') return 'STALE';
+  const expiresDate = parseIso(expiresAt);
+  if (expiresDate && Date.now() > expiresDate.getTime()) return 'STALE';
+  return 'FRESH';
+}
+
+function resolvePointer(payload, pointer) {
+  const path = String(pointer || '').trim();
+  if (!path) return { ok: true, value: payload };
+  let current = payload;
+  for (const segment of path.split('.')) {
+    if (current == null || typeof current !== 'object' || !(segment in current)) {
+      return { ok: false, value: undefined };
+    }
+    current = current[segment];
+  }
+  return { ok: true, value: current };
+}
+
+function semanticEqual(left, right) {
+  return jcs(left) === jcs(right);
+}
+
+function bytesEqual(left, right) {
+  if (left.length !== right.length) return false;
+  for (let index = 0; index < left.length; index += 1) {
+    if (left[index] !== right[index]) return false;
+  }
+  return true;
+}
+
+function renderEvidenceRef(sourceType, path) {
+  if (sourceType === 'verify_report_field') return `proof_pack/verify_report.json#${path}`;
+  if (sourceType === 'attestation_field') return `proof_pack/pack_manifest.json#attestation.${path}`;
+  if (sourceType === 'manifest_field') return `proof_pack/pack_manifest.json#${path}`;
+  if (sourceType === 'boundary_field') return `SCOPE_MANIFEST.json#${path}`;
+  return `unknown:${sourceType}:${path}`;
+}
+
+function readSource(sourceType, path, proofContext, boundaryPayload) {
+  if (sourceType === 'verify_report_field') return resolvePointer(proofContext.verifyReport, path);
+  if (sourceType === 'attestation_field') return resolvePointer(proofContext.attestation, path);
+  if (sourceType === 'manifest_field') return resolvePointer(proofContext.manifest, path);
+  if (sourceType === 'boundary_field') return resolvePointer(boundaryPayload, path);
+  throw new Error(`unsupported reviewer mapping source: ${sourceType}`);
+}
+
+function evaluateReviewerQuestion(question, proofContext, boundaryPayload) {
+  const prompt = question.prompt || question.question_id || 'Unnamed question';
+  const scope = question.scope || boundaryPayload.workflow_name || 'packet';
+  const statusRule = question.status_rule || 'OUT_OF_SCOPE';
+  const inScope = question.in_scope !== false;
+
+  if (!inScope || statusRule === 'OUT_OF_SCOPE') {
+    return {
+      'Claim / Question': prompt,
+      'Status': 'OUT_OF_SCOPE',
+      'Evidence': 'None',
+      'Scope': scope,
+      'Notes': question.out_of_scope_note || 'Question exceeds the declared packet boundary.',
+    };
+  }
+
+  if (statusRule === 'ALL_EVIDENCE_REQUIRED') {
+    const evidenceItems = Array.isArray(question.evidence) ? question.evidence : [];
+    if (evidenceItems.length === 0) throw new Error(`mapping_missing_evidence: ${prompt}`);
+    const values = [];
+    const refs = [];
+    for (const item of evidenceItems) {
+      const sourceType = item.type || '';
+      const path = item.path || '';
+      const resolved = readSource(sourceType, path, proofContext, boundaryPayload);
+      if (!resolved.ok) throw new Error(`mapping_pointer_not_found: ${sourceType}:${path}`);
+      values.push(resolved.value);
+      refs.push(renderEvidenceRef(sourceType, path));
+    }
+    const status = values.every(Boolean) ? 'EVIDENCED' : 'FAILED';
+    return {
+      'Claim / Question': prompt,
+      'Status': status,
+      'Evidence': refs.join('; '),
+      'Scope': scope,
+      'Notes': question.notes || (status === 'EVIDENCED' ? 'All required evidence fields are present and truthy.' : 'One or more required evidence fields is missing or false.'),
+    };
+  }
+
+  if (statusRule === 'PARTIAL_IF_RATIO_LT_1') {
+    const numeratorResolved = readSource('boundary_field', question.numerator_field || '', proofContext, boundaryPayload);
+    const denominatorResolved = readSource('boundary_field', question.denominator_field || '', proofContext, boundaryPayload);
+    if (!numeratorResolved.ok || !denominatorResolved.ok) throw new Error(`mapping_pointer_not_found: ${prompt}`);
+    const numerator = Number(numeratorResolved.value);
+    const denominator = Number(denominatorResolved.value);
+    if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) {
+      throw new Error(`invalid_ratio_denominator: ${prompt}`);
+    }
+    const status = numerator >= denominator ? 'EVIDENCED' : 'PARTIAL';
+    return {
+      'Claim / Question': prompt,
+      'Status': status,
+      'Evidence': `SCOPE_MANIFEST.json#${question.numerator_field} and SCOPE_MANIFEST.json#${question.denominator_field}`,
+      'Scope': scope,
+      'Notes': question.notes || (status === 'EVIDENCED' ? 'Coverage is complete for the declared boundary.' : `Coverage is partial: ${numerator} of ${denominator} identified items are covered.`),
+    };
+  }
+
+  if (statusRule === 'HUMAN_ATTESTED') {
+    return {
+      'Claim / Question': prompt,
+      'Status': 'HUMAN_ATTESTED',
+      'Evidence': question.evidence_label || 'Human attestation required',
+      'Scope': scope,
+      'Notes': question.notes || 'This claim depends on human review or organizational policy outside machine-verifiable proof.',
+    };
+  }
+
+  throw new Error(`unsupported_status_rule: ${statusRule}`);
+}
+
+function buildScopeManifest(boundaryPayload, mappingPayload, packetTime, signedBy) {
+  const questions = Array.isArray(mappingPayload.questions) ? mappingPayload.questions : [];
+  return {
+    workflow_name: boundaryPayload.workflow_name,
+    workflow_description: boundaryPayload.workflow_description,
+    repo_or_system_in_scope: boundaryPayload.repo_or_system_in_scope,
+    entrypoints_in_scope: boundaryPayload.entrypoints_in_scope || [],
+    callsites_identified: boundaryPayload.callsites_identified,
+    callsites_instrumented: boundaryPayload.callsites_instrumented,
+    controls_declared: boundaryPayload.controls_declared || [],
+    questions_mapped: questions.filter(q => q.in_scope !== false).map(q => q.prompt),
+    questions_out_of_scope: questions.filter(q => q.in_scope === false || q.status_rule === 'OUT_OF_SCOPE').map(q => q.prompt),
+    excluded_components: boundaryPayload.excluded_components || [],
+    boundary_notes: boundaryPayload.boundary_notes || [],
+    signed_at: packetTime,
+    signed_by: signedBy,
+  };
+}
+
+function parseCoverageMatrix(markdown) {
+  const lines = String(markdown || '').split('\n').map(line => line.trim()).filter(Boolean);
+  const header = `| ${COVERAGE_COLUMNS.join(' | ')} |`;
+  const start = lines.findIndex(line => line === header);
+  if (start < 0 || start + 2 >= lines.length) throw new Error('coverage_matrix_missing_rows');
+  const rows = [];
+  for (const line of lines.slice(start + 2)) {
+    if (!line.startsWith('|')) continue;
+    const cells = line.replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
+    if (cells.length !== COVERAGE_COLUMNS.length) throw new Error('coverage_matrix_wrong_column_count');
+    const row = {};
+    COVERAGE_COLUMNS.forEach((name, index) => { row[name] = cells[index]; });
+    rows.push(row);
+  }
+  return rows;
+}
+
+function deriveRegressionState(coverageRows, baselineState) {
+  if (!baselineState) return 'NONE';
+  const hasGap = coverageRows.some(row => ['PARTIAL', 'FAILED', 'HUMAN_ATTESTED'].includes(row['Status']));
+  return baselineState === 'VERIFIED' && hasGap ? 'REGRESSED' : 'NONE';
+}
+
+function deriveReviewerSettlement(integrityState, claimState, coverageRows, freshnessStateValue, regressionStateValue) {
+  if (integrityState !== 'PASS') return { state: 'TAMPERED', reason: 'Integrity verification failed for the nested proof pack or reviewer packet.' };
+  const inScopeRows = coverageRows.filter(row => row['Status'] !== 'OUT_OF_SCOPE');
+  if (inScopeRows.length === 0) return { state: 'OUT_OF_SCOPE', reason: 'All mapped questions are outside the declared packet scope.' };
+  if (regressionStateValue === 'REGRESSED') return { state: 'EVIDENCE_REGRESSION', reason: 'Evidence quality or coverage regressed compared with the baseline packet.' };
+  if (claimState !== 'PASS') return { state: 'INCOMPLETE_EVIDENCE', reason: 'The proof pack is authentic, but its declared claims do not pass.' };
+  if (inScopeRows.some(row => ['PARTIAL', 'HUMAN_ATTESTED'].includes(row['Status']))) {
+    return { state: 'VERIFIED_WITH_GAPS', reason: 'The packet is authentic and useful, but some in-scope coverage remains partial or human-attested.' };
+  }
+  if (inScopeRows.some(row => row['Status'] === 'FAILED')) {
+    return { state: 'INCOMPLETE_EVIDENCE', reason: 'The packet is authentic, but one or more in-scope mapped claims is not fully supported.' };
+  }
+  if (freshnessStateValue === 'STALE') {
+    return { state: 'VERIFIED_WITH_GAPS', reason: 'Evidence is authentic but stale relative to the packet freshness policy.' };
+  }
+  return { state: 'VERIFIED', reason: 'The packet is authentic and all in-scope mapped claims are fully evidenced.' };
+}
+
+function appendFailureReason(failureReasons, seen, code, message) {
+  if (seen.has(code)) return;
+  seen.add(code);
+  failureReasons.push({ code, message });
+}
+
+async function verifyPack(fileIndex, manifestPath = 'pack_manifest.json') {
+  const checks = [];
+  const warnings = [];
+  let manifest = null;
+  const root = packRoot(manifestPath);
+
+  const manifestFile = resolveManifestFile(fileIndex, manifestPath);
   if (!manifestFile) {
-    return { integrity: 'error', claims: null, error: 'pack_manifest.json not found in selected files.', checks: [], manifest: null };
+    return { artifact_type: 'proof_pack', integrity: 'error', claims: null, error: `${manifestPath} not found in selected files.`, checks: [], warnings: [], manifest: null, receipts: [] };
   }
 
   try {
-    const manifestText = await manifestFile.text();
-    manifest = JSON.parse(manifestText);
+    manifest = JSON.parse(await manifestFile.text());
   } catch (e) {
-    return { integrity: 'error', claims: null, error: 'pack_manifest.json is not valid JSON.', checks: [], manifest: null };
+    return { artifact_type: 'proof_pack', integrity: 'error', claims: null, error: `${manifestPath} is not valid JSON.`, checks: [], warnings: [], manifest: null, receipts: [] };
   }
 
-  // 2. Verify file hashes
   let hashFailed = false;
-  const declaredFiles = manifest.files || [];
+  let hashFailCount = 0;
+  const declaredFiles = Array.isArray(manifest.files) ? manifest.files : [];
   for (const entry of declaredFiles) {
-    const file = resolveManifestFile(fileIndex, entry.path);
+    const file = resolveManifestFile(fileIndex, prefixedPath(root, entry.path));
     if (!file) {
-      checks.push({ name: entry.path, status: 'fail', detail: 'file missing or ambiguous' });
+      checks.push({ name: entry.path, status: 'fail', detail: 'file missing' });
       hashFailed = true;
+      hashFailCount += 1;
       continue;
     }
-    const data = await file.arrayBuffer();
-    const hash = await sha256Hex(data);
+    const hash = await sha256Hex(await file.arrayBuffer());
     if (hash === entry.sha256) {
-      checks.push({ name: entry.path, status: 'pass', detail: `SHA-256 match (${hash.slice(0, 16)}...)` });
+      checks.push({ name: entry.path, status: 'pass', detail: `SHA-256 \u2713 (${hash.slice(0, 16)}\u2026)` });
     } else {
-      checks.push({ name: entry.path, status: 'fail', detail: `SHA-256 mismatch: expected ${entry.sha256.slice(0, 16)}..., got ${hash.slice(0, 16)}...` });
+      checks.push({ name: entry.path, status: 'fail', detail: `SHA-256 mismatch: expected ${entry.sha256.slice(0, 16)}\u2026, got ${hash.slice(0, 16)}\u2026` });
       hashFailed = true;
+      hashFailCount += 1;
     }
   }
 
-  // 3. Verify Ed25519 signature
   const pubkey = manifest.signer_pubkey;
   const sig = manifest.signature;
   let sigResult = null;
-
   if (pubkey && sig && manifest.signature_scope === 'JCS(pack_manifest_without_signature)') {
-    // Create manifest copy without signature and pack_root_sha256
-    // (pack_root_sha256 is added after signing, so it's not part of the signed content)
     const manifestCopy = {};
-    for (const k of Object.keys(manifest)) {
-      if (k !== 'signature' && k !== 'pack_root_sha256') manifestCopy[k] = manifest[k];
+    for (const key of Object.keys(manifest)) {
+      if (key !== 'signature' && key !== 'pack_root_sha256') manifestCopy[key] = manifest[key];
     }
-    const jcsStr = jcs(manifestCopy);
-    sigResult = await verifySignature(pubkey, sig, jcsStr);
-
+    sigResult = await verifySignature(pubkey, sig, jcs(manifestCopy));
     if (sigResult === true) {
       checks.push({ name: 'Ed25519 signature', status: 'pass', detail: `signer: ${manifest.signer_id || 'unknown'}` });
     } else if (sigResult === false) {
       checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'signature verification failed' });
     } else {
-      checks.push({ name: 'Ed25519 signature', status: 'skip', detail: 'browser does not support Ed25519 (hash checks still valid)' });
+      warnings.push('Browser lacks Ed25519 support; proof-pack verification is hash-only in this session.');
+      checks.push({ name: 'Ed25519 signature', status: 'skip', detail: 'browser lacks Ed25519 support (hash checks still valid)' });
     }
   } else {
     checks.push({ name: 'Ed25519 signature', status: 'skip', detail: 'manifest missing signature fields' });
   }
 
-  // 4. Parse receipts
-  let receipts = [];
-  const receiptFile = resolveManifestFile(fileIndex, 'receipt_pack.jsonl');
+  const receipts = [];
+  const receiptFile = resolveManifestFile(fileIndex, prefixedPath(root, 'receipt_pack.jsonl'));
   if (receiptFile) {
     const text = await receiptFile.text();
     for (const line of text.trim().split('\n')) {
-      if (line.trim()) {
-        try { receipts.push(JSON.parse(line)); } catch (e) { /* skip malformed */ }
-      }
+      if (!line.trim()) continue;
+      try { receipts.push(JSON.parse(line)); } catch (e) { }
     }
   }
 
-  // 5. Compute two-axis verdict
-  const sigFailed = checks.some(c => c.name === 'Ed25519 signature' && c.status === 'fail');
+  const sigFailed = checks.some(check => check.name === 'Ed25519 signature' && check.status === 'fail');
   let integrity;
-  if (hashFailed)           integrity = 'tampered';
-  else if (sigFailed)       integrity = 'sig_invalid';
+  if (hashFailed) integrity = 'tampered';
+  else if (sigFailed) integrity = 'sig_invalid';
   else if (sigResult === null) integrity = 'hash_only';
-  else                      integrity = 'pass';
+  else integrity = 'pass';
 
-  // Claims axis: only meaningful if integrity passes
   let claims = null;
   if (integrity === 'pass' || integrity === 'hash_only') {
     const att = manifest.attestation || {};
@@ -344,7 +1046,7 @@ async function verifyPack(fileIndex) {
     } else if (att.claim_check === 'PASS') {
       claims = 'pass';
       checks.push({ name: 'Claim check', status: 'pass', detail: 'attestation.claim_check = PASS' });
-    } else if (att.claim_check === undefined || att.claim_check === null) {
+    } else if (att.claim_check == null) {
       claims = 'pass';
       checks.push({ name: 'Claim check', status: 'skip', detail: 'no claim_check in attestation' });
     } else {
@@ -353,159 +1055,542 @@ async function verifyPack(fileIndex) {
     }
   }
 
-  return { integrity, claims, error: null, checks, manifest, receipts, sigResult };
+  return { artifact_type: 'proof_pack', integrity, claims, error: null, checks, warnings, manifest, receipts, sigResult, hashFailCount, manifestPath };
 }
 
-// --- UI ---
-const dropZone = document.getElementById('dropZone');
-const folderInput = document.getElementById('folderInput');
-const fileInput = document.getElementById('fileInput');
-const spinner = document.getElementById('spinner');
-const result = document.getElementById('result');
-const resetBtn = document.getElementById('resetBtn');
+async function verifyReviewerPacket(fileIndex) {
+  try {
+    for (const fileName of REVIEWER_REQUIRED_FILES) {
+      if (!hasFile(fileIndex, fileName)) throw new Error(`${fileName} not found in selected files.`);
+    }
 
-function buildFileIndex(fileList) {
-  // Build two indexes: exact relative paths and basename → [files]
-  const byPath = new Map();   // relative path → File
-  const byName = new Map();   // basename → [{ path, file }]
+    const settlement = await readJsonFile(fileIndex, 'SETTLEMENT.json');
+    const scopeManifest = await readJsonFile(fileIndex, 'SCOPE_MANIFEST.json');
+    const coverageMatrixText = await readTextFile(fileIndex, 'COVERAGE_MATRIX.md');
+    const packetInputs = await readJsonFile(fileIndex, 'PACKET_INPUTS.json');
+    const packetManifest = await readJsonFile(fileIndex, 'PACKET_MANIFEST.json');
+    const coverageRows = parseCoverageMatrix(coverageMatrixText);
 
-  for (const f of fileList) {
-    let relPath = f.webkitRelativePath || f.name;
-    // Normalize: strip leading slash if present
-    if (relPath.startsWith('/')) relPath = relPath.slice(1);
-    byPath.set(relPath, f);
+    const proofPackPath = normalizeRelativePath(settlement.proof_pack_path || './proof_pack');
+    const proofPackManifestPath = `${proofPackPath}/pack_manifest.json`;
+    const proofPackVerifyPath = `${proofPackPath}/verify_report.json`;
+    const proofPackResult = await verifyPack(fileIndex, proofPackManifestPath);
+    const proofPackManifest = await readJsonFile(fileIndex, proofPackManifestPath);
+    const verifyReport = await readJsonFile(fileIndex, proofPackVerifyPath);
+    const attestation = proofPackManifest.attestation || {};
+    const proofContext = {
+      manifest: proofPackManifest,
+      attestation,
+      verifyReport,
+      timestampEnd: attestation.timestamp_end || verifyReport.verified_at || new Date().toISOString(),
+    };
 
-    const basename = relPath.split('/').pop();
-    if (!byName.has(basename)) byName.set(basename, []);
-    byName.get(basename).push({ path: relPath, file: f });
+    const boundaryPayload = packetInputs.boundary_payload || {};
+    const mappingPayload = packetInputs.mapping_payload || {};
+    const baselineState = packetInputs.baseline_settlement_state || null;
+    const packetTime = String(settlement.generated_at || '');
+    const freshnessPolicy = boundaryPayload.freshness_policy || {};
+    const validFor = freshnessPolicy.valid_for || settlement.valid_for || 'P30D';
+    const staleAfter = freshnessPolicy.stale_after || null;
+    const signedBy = scopeManifest.signed_by || boundaryPayload.signed_by || 'assay reviewer-packet compiler';
+    const expectedScopeManifest = buildScopeManifest(boundaryPayload, mappingPayload, packetTime, signedBy);
+    const expectedCoverageRows = (mappingPayload.questions || []).map(question => evaluateReviewerQuestion(question, proofContext, boundaryPayload));
+    const coverageSummary = {};
+    for (const row of expectedCoverageRows) coverageSummary[row['Status']] = (coverageSummary[row['Status']] || 0) + 1;
+
+    const errors = [];
+    const warnings = [...(proofPackResult.warnings || [])];
+    const packetManifestErrors = [];
+    let packetHashesOk = true;
+    for (const entry of packetManifest.files || []) {
+      const relPath = entry.path || '';
+      const file = resolveManifestFile(fileIndex, relPath);
+      if (!file) {
+        packetManifestErrors.push(`PACKET_MANIFEST.json referenced file missing: ${relPath}`);
+        packetHashesOk = false;
+        continue;
+      }
+      const actualHash = await sha256Hex(await file.arrayBuffer());
+      if (actualHash !== entry.sha256) {
+        packetManifestErrors.push(`PACKET_MANIFEST.json file hash mismatch: ${relPath}`);
+        packetHashesOk = false;
+      }
+    }
+
+    let packetSigResult = null;
+    let detachedPacketSignatureMatches = true;
+    if (packetManifest.signature && packetManifest.signature_scope === 'JCS(packet_manifest_without_signature)') {
+      let signatureBytes = null;
+      try {
+        signatureBytes = b64ToBytes(packetManifest.signature);
+      } catch (e) {
+        packetManifestErrors.push('PACKET_MANIFEST.json signature is not valid base64');
+        detachedPacketSignatureMatches = false;
+      }
+
+      if (detachedPacketSignatureMatches) {
+        const detachedSignatureFile = resolveManifestFile(fileIndex, 'PACKET_SIGNATURE.sig');
+        if (!detachedSignatureFile) {
+          packetManifestErrors.push('Missing detached packet signature: PACKET_SIGNATURE.sig');
+          detachedPacketSignatureMatches = false;
+        } else {
+          const detachedSignatureBytes = new Uint8Array(await detachedSignatureFile.arrayBuffer());
+          if (!bytesEqual(detachedSignatureBytes, signatureBytes)) {
+            packetManifestErrors.push('Detached packet signature does not match PACKET_MANIFEST.json signature');
+            detachedPacketSignatureMatches = false;
+          }
+        }
+      }
+
+      const packetCopy = {};
+      for (const key of Object.keys(packetManifest)) {
+        if (key !== 'signature') packetCopy[key] = packetManifest[key];
+      }
+      if (detachedPacketSignatureMatches) {
+        packetSigResult = await verifySignature(packetManifest.signer_pubkey, packetManifest.signature, jcs(packetCopy));
+        if (packetSigResult === null) {
+          warnings.push('Browser lacks Ed25519 support; packet-manifest verification is hash-only in this session.');
+        }
+        if (packetSigResult === false) {
+          packetManifestErrors.push('PACKET_MANIFEST.json signature verification failed');
+        }
+      }
+    } else if (!packetManifest.signature) {
+      warnings.push('PACKET_MANIFEST.json is unsigned; packet integrity is only hash-checked, not cryptographically attested.');
+    }
+
+    errors.push(...packetManifestErrors);
+
+    const scopeManifestMatches = semanticEqual(scopeManifest, expectedScopeManifest);
+    if (!scopeManifestMatches) errors.push('SCOPE_MANIFEST.json does not match the derived packet scope manifest');
+
+    const coverageRowsMatch = semanticEqual(coverageRows, expectedCoverageRows);
+    if (!coverageRowsMatch) errors.push('COVERAGE_MATRIX.md does not match the derived coverage rows');
+
+    let expectedExpiresAt = null;
+    if (parseIso(packetTime)) expectedExpiresAt = addPeriodDays(packetTime, validFor);
+    const validForMatches = settlement.valid_for === validFor;
+    if (!validForMatches) errors.push(`SETTLEMENT.json valid_for=${settlement.valid_for} does not match derived valid_for=${validFor}`);
+    const expiresAtMatches = expectedExpiresAt == null || settlement.expires_at === expectedExpiresAt;
+    if (!expiresAtMatches) errors.push(`SETTLEMENT.json expires_at=${settlement.expires_at} does not match derived expires_at=${expectedExpiresAt}`);
+
+    const proofPackManifestFile = resolveManifestFile(fileIndex, proofPackManifestPath);
+    const actualManifestSha256 = proofPackManifestFile ? await sha256Hex(await proofPackManifestFile.arrayBuffer()) : null;
+    const proofPackVerified = !proofPackResult.error && ['pass', 'hash_only'].includes(proofPackResult.integrity);
+    const actualIntegrityState = proofPackVerified ? 'PASS' : 'FAIL';
+    const claimPassed = verifyReport.claim_verification && typeof verifyReport.claim_verification === 'object'
+      ? !!verifyReport.claim_verification.passed
+      : attestation.claim_check !== 'FAIL';
+    const actualClaimState = claimPassed ? 'PASS' : 'FAIL';
+    const effectiveFreshnessState = deriveEffectiveFreshnessState(packetTime, String(settlement.expires_at || expectedExpiresAt || ''), String(proofContext.timestampEnd || packetTime), staleAfter);
+    const actualRegressionState = deriveRegressionState(expectedCoverageRows, baselineState);
+
+    const packManifestShaMatches = settlement.pack_manifest_sha256 === actualManifestSha256;
+    if (!packManifestShaMatches) errors.push('SETTLEMENT.json pack_manifest_sha256 does not match proof_pack/pack_manifest.json');
+    const integrityMatches = settlement.integrity_state === actualIntegrityState;
+    if (!integrityMatches) errors.push(`SETTLEMENT.json integrity_state=${settlement.integrity_state} does not match nested proof pack integrity_state=${actualIntegrityState}`);
+    const claimMatches = settlement.claim_state === actualClaimState;
+    if (!claimMatches) errors.push(`SETTLEMENT.json claim_state=${settlement.claim_state} does not match nested proof pack claim_state=${actualClaimState}`);
+    const freshnessMatches = settlement.freshness_state === effectiveFreshnessState;
+    if (!freshnessMatches) errors.push(`SETTLEMENT.json freshness_state=${settlement.freshness_state} does not match derived freshness_state=${effectiveFreshnessState}`);
+    const regressionMatches = settlement.regression_state === actualRegressionState;
+    if (!regressionMatches) errors.push(`SETTLEMENT.json regression_state=${settlement.regression_state} does not match derived regression_state=${actualRegressionState}`);
+
+    const packetManifestVerified = packetHashesOk && detachedPacketSignatureMatches && packetSigResult !== false;
+    const effectiveIntegrityState = actualIntegrityState === 'PASS' && packetManifestVerified ? 'PASS' : 'FAIL';
+    const derivedSettlement = deriveReviewerSettlement(effectiveIntegrityState, actualClaimState, expectedCoverageRows, effectiveFreshnessState, actualRegressionState);
+    const expectedScopeState = derivedSettlement.state === 'OUT_OF_SCOPE' ? 'OUT_OF_SCOPE' : 'BOUNDED';
+    const scopeStateMatches = settlement.scope_state === expectedScopeState;
+    if (!scopeStateMatches) errors.push(`SETTLEMENT.json scope_state=${settlement.scope_state} does not match derived scope_state=${expectedScopeState}`);
+    const providedSettlementState = String(settlement.settlement_state || '');
+    const settlementMatches = providedSettlementState === derivedSettlement.state;
+    if (!settlementMatches) errors.push(`SETTLEMENT.json settlement_state=${providedSettlementState} does not match derived settlement_state=${derivedSettlement.state}`);
+    const basisMatches = !Array.isArray(settlement.settlement_basis) || settlement.settlement_basis.length === 0 || settlement.settlement_basis[0] === derivedSettlement.reason;
+    if (!basisMatches) errors.push('SETTLEMENT.json settlement_basis[0] does not match the derived settlement interpretation');
+
+    if (!proofPackVerified) {
+      errors.push(`Nested proof pack verification failed: ${proofPackResult.error || proofPackResult.integrity}`);
+    }
+
+    const metadataMatchMap = {
+      pack_manifest_sha256: packManifestShaMatches,
+      valid_for: validForMatches,
+      expires_at: expiresAtMatches,
+      integrity_state: integrityMatches,
+      claim_state: claimMatches,
+      freshness_state: freshnessMatches,
+      regression_state: regressionMatches,
+      scope_state: scopeStateMatches,
+      settlement_state: settlementMatches,
+      settlement_basis: basisMatches,
+      scope_manifest: scopeManifestMatches,
+      coverage_matrix: coverageRowsMatch,
+    };
+    const metadataMismatches = Object.entries(metadataMatchMap).filter(([, matched]) => !matched).map(([name]) => name);
+    const failureReasons = [];
+    const seen = new Set();
+    const packetLayerTamper = packetManifestErrors.length > 0 || !scopeManifestMatches || !coverageRowsMatch;
+    if (packetLayerTamper) appendFailureReason(failureReasons, seen, 'packet_layer_tamper', 'Packet-layer files or derived packet views do not match the attested reviewer packet.');
+    if (!proofPackVerified) appendFailureReason(failureReasons, seen, 'nested_proof_pack_failure', 'Nested proof pack verification failed.');
+    if (effectiveFreshnessState === 'STALE') appendFailureReason(failureReasons, seen, 'stale_packet', 'Packet evidence is stale under the declared freshness policy.');
+    if (metadataMismatches.length > 0) appendFailureReason(failureReasons, seen, 'provided_metadata_mismatch', 'Provided packet metadata does not match the recomputed verification result.');
+    if (errors.length > 0 && failureReasons.length === 0) appendFailureReason(failureReasons, seen, 'invalid_packet_format', 'Reviewer packet validation failed.');
+
+    const packetVerified = errors.length === 0 && derivedSettlement.state !== 'TAMPERED';
+    return {
+      artifact_type: 'reviewer_packet',
+      command: 'reviewer verify',
+      status: packetVerified ? 'ok' : 'failed',
+      error: null,
+      packet_id: String(settlement.packet_id || 'reviewer_packet'),
+      packet_verified: packetVerified,
+      provided_settlement_state: providedSettlementState,
+      settlement_state: derivedSettlement.state,
+      settlement_reason: derivedSettlement.reason,
+      integrity_state: actualIntegrityState,
+      claim_state: actualClaimState,
+      scope_state: expectedScopeState,
+      freshness_state: effectiveFreshnessState,
+      regression_state: actualRegressionState,
+      coverage_summary: coverageSummary,
+      errors,
+      warnings,
+      primary_failure_reason: failureReasons.length > 0 ? failureReasons[0].code : null,
+      failure_reasons: failureReasons,
+      settlement_verification: {
+        recomputed: true,
+        matches_provided: settlementMatches,
+        provided_metadata_matches: metadataMismatches.length === 0,
+        metadata_mismatches: metadataMismatches,
+        basis_matches: basisMatches,
+        provided_state: providedSettlementState,
+        derived_state: derivedSettlement.state,
+      },
+      packet_manifest: {
+        path: 'PACKET_MANIFEST.json',
+        signed: !!packetManifest.signature,
+        verified: packetManifestVerified,
+        signer_identity: packetManifest.signer_id || null,
+        signer_fingerprint: packetManifest.signer_pubkey_sha256 || null,
+      },
+      proof_pack: {
+        path: proofPackPath,
+        verified: proofPackVerified,
+        receipt_count: proofPackResult.receipts ? proofPackResult.receipts.length : null,
+        head_hash: verifyReport.head_hash || null,
+        errors: proofPackResult.error ? [{ message: proofPackResult.error }] : [],
+        warnings: proofPackResult.warnings || [],
+      },
+    };
+  } catch (e) {
+    return {
+      artifact_type: 'reviewer_packet',
+      command: 'reviewer verify',
+      status: 'error',
+      error: e.message || String(e),
+      checks: [],
+      warnings: [],
+      errors: [],
+      proof_pack: { errors: [], warnings: [] },
+    };
   }
-
-  return { byPath, byName };
 }
 
-function resolveManifestFile(index, manifestPath) {
-  // 1. Try exact path match (manifest declares paths like "receipt_pack.jsonl")
-  if (index.byPath.has(manifestPath)) return index.byPath.get(manifestPath);
-
-  // 2. Try matching as suffix of uploaded paths (e.g. "proof_pack/receipt_pack.jsonl")
-  for (const [uploadedPath, file] of index.byPath) {
-    if (uploadedPath.endsWith('/' + manifestPath)) return file;
-  }
-
-  // 3. Basename fallback — only if exactly one candidate
-  const basename = manifestPath.split('/').pop();
-  const candidates = index.byName.get(basename);
-  if (candidates && candidates.length === 1) return candidates[0].file;
-
-  // 4. Ambiguous or missing — fail closed
-  return null;
+async function verifyAnyArtifact(fileIndex) {
+  const isReviewerPacket = REVIEWER_REQUIRED_FILES.every(fileName => hasFile(fileIndex, fileName));
+  if (isReviewerPacket) return await verifyReviewerPacket(fileIndex);
+  const proofPackResult = await verifyPack(fileIndex);
+  proofPackResult.command = 'verify-pack';
+  proofPackResult.status = proofPackResult.error ? 'error' : (proofPackResult.integrity === 'pass' ? 'ok' : 'failed');
+  return proofPackResult;
 }
+
+// ── Load sample pack ───────────────────────────────────────────────────────
+
+function makeFileFromString(name, content) {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const file = new File([blob], name);
+  return file;
+}
+
+async function loadSample(key) {
+  const pack = SAMPLE_PACKS[key];
+  if (!pack) return;
+  const files = Object.entries(pack).map(([name, content]) => makeFileFromString(name, content));
+  await handleFiles(files);
+}
+
+// ── State ──────────────────────────────────────────────────────────────────
+
+let lastResult = null;
+let lastManifest = null;
+
+// ── Handle files ───────────────────────────────────────────────────────────
 
 async function handleFiles(fileList) {
-  if (fileList.length === 0) return;
+  if (!fileList || fileList.length === 0) return;
 
   const fileIndex = buildFileIndex(fileList);
 
-  dropZone.style.display = 'none';
-  document.querySelector('.file-inputs').style.display = 'none';
-  spinner.style.display = 'block';
-  result.style.display = 'none';
+  setInputVisible(false);
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('resultArea').style.display = 'none';
 
-  const res = await verifyPack(fileIndex);
+  const res = await verifyAnyArtifact(fileIndex);
 
-  spinner.style.display = 'none';
-  result.style.display = 'block';
-  resetBtn.style.display = 'block';
+  document.getElementById('spinner').style.display = 'none';
 
-  const verdictBox = document.getElementById('verdictBox');
+  lastResult = res;
+  lastManifest = res.manifest || null;
+
+  renderResult(res);
+}
+
+function setInputVisible(visible) {
+  document.getElementById('dropZone').style.display = visible ? '' : 'none';
+  document.querySelector('.file-buttons').style.display = visible ? '' : 'none';
+  document.getElementById('sampleHint').style.display = visible ? '' : 'none';
+}
+
+// ── Render result ──────────────────────────────────────────────────────────
+
+function renderReviewerPacketResult(res) {
+  const resultArea = document.getElementById('resultArea');
+  const verdictCard = document.getElementById('verdictCard');
   const verdictLabel = document.getElementById('verdictLabel');
   const verdictDetail = document.getElementById('verdictDetail');
+  const stalenessPill = document.getElementById('stalenessPill');
+  const checksList = document.getElementById('checksList');
+  const metaGrid = document.getElementById('metaGrid');
+  const detailSectionTitle = document.getElementById('detailSectionTitle');
+  const receiptsSection = document.getElementById('receiptsSection');
+  const receiptsList = document.getElementById('receiptsList');
+
+  verdictCard.className = 'verdict-card';
+  detailSectionTitle.textContent = 'Packet Details';
 
   if (res.error) {
-    verdictBox.className = 'verdict-box fail';
-    verdictLabel.className = 'verdict-label fail';
+    verdictCard.classList.add('state-error');
     verdictLabel.textContent = 'ERROR';
     verdictDetail.textContent = res.error;
+    stalenessPill.innerHTML = '';
+    checksList.innerHTML = '';
+    metaGrid.innerHTML = '';
+    receiptsSection.hidden = true;
+    document.getElementById('resetBtn').style.display = 'block';
+    resultArea.style.display = 'block';
     return;
   }
 
-  // Two-axis verdict rendering
-  if (res.integrity === 'tampered') {
-    verdictBox.className = 'verdict-box fail';
-    verdictLabel.className = 'verdict-label fail';
-    verdictLabel.textContent = 'TAMPERED';
-    verdictDetail.textContent = 'File hashes do not match the manifest. This pack has been modified after signing.';
-  } else if (res.integrity === 'sig_invalid') {
-    verdictBox.className = 'verdict-box fail';
-    verdictLabel.className = 'verdict-label fail';
-    verdictLabel.textContent = 'SIGNATURE INVALID';
-    verdictDetail.textContent = 'File hashes match, but the Ed25519 signature is invalid.';
-  } else if (res.integrity === 'hash_only') {
-    // Integrity passes via hashes, but no signature support
-    if (res.claims === 'fail') {
-      verdictBox.className = 'verdict-box warn';
-      verdictLabel.className = 'verdict-label warn';
-      verdictLabel.textContent = 'HONEST FAIL';
-      verdictDetail.textContent = 'All file hashes match. The evidence is intact, but the declared claims did not pass. Signature check skipped (browser does not support Ed25519).';
-    } else {
-      verdictBox.className = 'verdict-box warn';
-      verdictLabel.className = 'verdict-label warn';
-      verdictLabel.textContent = 'HASHES PASS';
-      verdictDetail.textContent = 'All file hashes match. Signature check skipped (browser does not support Ed25519). For full verification, use: assay verify-pack';
-    }
+  if (res.settlement_state === 'TAMPERED' || res.primary_failure_reason === 'packet_layer_tamper') {
+    verdictCard.classList.add('state-tampered');
+  } else if (res.settlement_state === 'VERIFIED') {
+    verdictCard.classList.add('state-pass');
   } else {
-    // integrity === 'pass' — full cryptographic verification
-    if (res.claims === 'fail') {
-      verdictBox.className = 'verdict-box warn';
-      verdictLabel.className = 'verdict-label warn';
-      verdictLabel.textContent = 'HONEST FAIL';
-      verdictDetail.textContent = 'All file hashes match and the Ed25519 signature is valid. The evidence is authentic and untampered, but the declared claims did not pass. This is a sealed record of failure.';
-    } else {
-      verdictBox.className = 'verdict-box pass';
-      verdictLabel.className = 'verdict-label pass';
-      verdictLabel.textContent = 'VERIFICATION PASSED';
-      verdictDetail.textContent = 'All file hashes match and the Ed25519 signature is valid. This evidence has not been tampered with.';
+    verdictCard.classList.add('state-honest-fail');
+  }
+
+  verdictLabel.textContent = String(res.settlement_state || 'UNKNOWN').replaceAll('_', ' ');
+  if (res.primary_failure_reason === 'packet_layer_tamper') {
+    verdictDetail.textContent = 'Packet-layer files no longer match the attested reviewer packet. Treat the buyer-facing packet as tampered.';
+  } else if (res.primary_failure_reason === 'nested_proof_pack_failure') {
+    verdictDetail.textContent = 'The nested proof pack failed verification. Reviewer settlement cannot be trusted until the underlying proof pack is repaired.';
+  } else if (res.primary_failure_reason === 'stale_packet') {
+    verdictDetail.textContent = 'The packet is still authentic, but its evidence is stale relative to the declared freshness policy.';
+  } else {
+    verdictDetail.textContent = res.settlement_reason || 'Reviewer packet verification completed.';
+  }
+
+  stalenessPill.innerHTML = `<span class="staleness-pill ${res.freshness_state === 'FRESH' ? 'fresh' : 'stale'}">Freshness: ${esc(res.freshness_state || 'UNKNOWN')}</span>`;
+
+  const signerIdentity = res.packet_manifest && res.packet_manifest.signer_identity ? res.packet_manifest.signer_identity : 'unsigned';
+  const signerFp = res.packet_manifest && res.packet_manifest.signer_fingerprint ? ` (${res.packet_manifest.signer_fingerprint.slice(0, 8)}\u2026)` : '';
+  const checkRows = [
+    {
+      name: 'Packet manifest',
+      status: res.packet_manifest && res.packet_manifest.verified ? 'pass' : (res.packet_manifest && res.packet_manifest.signed ? 'fail' : 'skip'),
+      detail: res.packet_manifest && res.packet_manifest.signed ? `signed by ${signerIdentity}${signerFp}` : 'unsigned packet manifest',
+    },
+    {
+      name: 'Nested proof pack',
+      status: res.proof_pack && res.proof_pack.verified ? 'pass' : 'fail',
+      detail: res.proof_pack && res.proof_pack.verified ? 'nested proof pack verified' : 'nested proof pack failed',
+    },
+    {
+      name: 'Settlement recomputed',
+      status: 'pass',
+      detail: `${res.settlement_verification.derived_state} (${res.settlement_verification.matches_provided ? 'matches provided' : 'provided metadata diverged'})`,
+    },
+    {
+      name: 'Freshness policy',
+      status: res.freshness_state === 'FRESH' ? 'pass' : 'fail',
+      detail: res.freshness_state,
+    },
+  ];
+  for (const reason of res.failure_reasons || []) {
+    checkRows.push({ name: `Failure: ${reason.code}`, status: 'fail', detail: reason.message });
+  }
+  for (const warning of res.warnings || []) {
+    checkRows.push({ name: 'Warning', status: 'skip', detail: warning });
+  }
+
+  checksList.innerHTML = '';
+  for (const check of checkRows) {
+    const icon = check.status === 'pass' ? '\u2713' : check.status === 'fail' ? '\u2717' : '\u2014';
+    checksList.innerHTML += `<div class="check-row"><span class="check-icon ${esc(check.status)}">${icon}</span><span class="check-name">${esc(check.name)}</span><span class="check-detail">${esc(check.detail)}</span></div>`;
+  }
+
+  metaGrid.innerHTML = '';
+  const coverageText = Object.entries(res.coverage_summary || {}).map(([status, count]) => `${status}=${count}`).join(', ');
+  const metaFields = [
+    ['Packet ID', res.packet_id],
+    ['Settlement', res.settlement_state],
+    ['Packet signer', res.packet_manifest && res.packet_manifest.signer_identity ? `${res.packet_manifest.signer_identity}${signerFp}` : 'unsigned'],
+    ['Freshness', res.freshness_state],
+    ['Regression', res.regression_state],
+    ['Claims', res.claim_state],
+    ['Proof pack', res.proof_pack ? (res.proof_pack.verified ? 'verified' : 'failed') : 'unknown'],
+    ['Coverage', coverageText || 'none'],
+  ];
+  for (const [label, value] of metaFields) {
+    if (value != null) metaGrid.innerHTML += `<dt>${esc(label)}</dt><dd>${esc(String(value))}</dd>`;
+  }
+
+  receiptsSection.hidden = false;
+  receiptsList.innerHTML = '';
+  for (const [status, count] of Object.entries(res.coverage_summary || {}).sort()) {
+    receiptsList.innerHTML += `<div class="check-row"><span class="check-icon pass" style="font-style:normal;font-weight:600">${esc(String(count))}</span><span class="check-name">${esc(status)}</span><span class="check-detail">coverage row${count === 1 ? '' : 's'}</span></div>`;
+  }
+  if ((res.errors || []).length > 0) {
+    for (const error of res.errors.slice(0, 6)) {
+      receiptsList.innerHTML += `<div class="check-row"><span class="check-icon fail">\u2717</span><span class="check-name">packet error</span><span class="check-detail">${esc(error)}</span></div>`;
     }
   }
 
-  // Checks list
+  document.getElementById('resetBtn').style.display = 'block';
+  resultArea.style.display = 'block';
+}
+
+function renderResult(res) {
+  if (res && res.artifact_type === 'reviewer_packet') {
+    renderReviewerPacketResult(res);
+    return;
+  }
+
+  const resultArea = document.getElementById('resultArea');
+  const verdictCard = document.getElementById('verdictCard');
+  const verdictLabel = document.getElementById('verdictLabel');
+  const verdictDetail = document.getElementById('verdictDetail');
+  const stalenessPill = document.getElementById('stalenessPill');
+  document.getElementById('detailSectionTitle').textContent = 'Receipts';
+
+  // Reset classes
+  verdictCard.className = 'verdict-card';
+
+  if (res.error) {
+    verdictCard.classList.add('state-error');
+    verdictLabel.textContent = 'ERROR';
+    verdictDetail.textContent = res.error;
+    stalenessPill.innerHTML = '';
+    document.getElementById('checksList').innerHTML = '';
+    document.getElementById('metaGrid').innerHTML = '';
+    document.getElementById('receiptsSection').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'block';
+    resultArea.style.display = 'block';
+    return;
+  }
+
+  const m = res.manifest || {};
+  const att = m.attestation || {};
+  const signer = m.signer_id || 'unknown';
+  const signerFp = m.signer_pubkey_sha256 ? ` (${m.signer_pubkey_sha256.slice(0, 8)}\u2026)` : '';
+  const dateStr = att.timestamp_start ? formatDate(att.timestamp_start) : 'unknown date';
+
+  if (res.integrity === 'tampered') {
+    verdictCard.classList.add('state-tampered');
+    verdictLabel.textContent = 'TAMPERED';
+    const n = res.hashFailCount || 1;
+    verdictDetail.textContent = `One or more files were modified after signing. The original evidence cannot be trusted. ${n} hash mismatch${n !== 1 ? 'es' : ''} detected.`;
+
+  } else if (res.integrity === 'sig_invalid') {
+    verdictCard.classList.add('state-sig-invalid');
+    verdictLabel.textContent = 'SIGNATURE INVALID';
+    verdictDetail.textContent = 'File hashes match, but the Ed25519 signature is invalid. This pack may have been re-signed by an unauthorized party.';
+
+  } else if (res.integrity === 'hash_only') {
+    if (res.claims === 'fail') {
+      verdictCard.classList.add('state-honest-fail');
+      verdictLabel.textContent = 'HONEST FAIL';
+      verdictDetail.textContent = `All file hashes match. The evidence is intact, but the system violated its own declared standard. This is a sealed, unfalsifiable record of failure \u2014 it cannot be rewritten. (Ed25519 not supported in this browser; run \`assay verify-pack\` for full verification.)`;
+    } else {
+      verdictCard.classList.add('state-hash-only');
+      verdictLabel.textContent = 'HASHES PASS';
+      verdictDetail.textContent = `All file hashes match but Ed25519 signature verification is not supported in this browser. For full verification: \`assay verify-pack\``;
+    }
+
+  } else {
+    // integrity === 'pass'
+    if (res.claims === 'fail') {
+      verdictCard.classList.add('state-honest-fail');
+      verdictLabel.textContent = 'HONEST FAIL';
+      verdictDetail.textContent = `This evidence is authentic and untampered, but the system violated its own declared standard. This is a sealed, unfalsifiable record of failure \u2014 it cannot be rewritten.`;
+    } else {
+      verdictCard.classList.add('state-pass');
+      verdictLabel.textContent = 'VERIFICATION PASSED';
+      verdictDetail.textContent = `This evidence was signed by ${signer}${signerFp} on ${dateStr} and has not been modified. All declared standards pass.`;
+    }
+  }
+
+  // Staleness
+  stalenessPill.innerHTML = '';
+  if (att.timestamp_end) {
+    try {
+      const recorded = new Date(att.timestamp_end);
+      const now = new Date();
+      const daysDiff = Math.floor((now - recorded) / (1000 * 60 * 60 * 24));
+      if (!isNaN(daysDiff)) {
+        let cls = 'fresh', label = `Evidence recorded ${daysDiff} day${daysDiff !== 1 ? 's' : ''} ago`;
+        if (daysDiff > 365) { cls = 'stale'; label = `This evidence is over 1 year old (${daysDiff} days)`; }
+        else if (daysDiff > 90) { cls = 'warn'; label = `Evidence recorded ${daysDiff} days ago (over 90 days)`; }
+        stalenessPill.innerHTML = `<span class="staleness-pill ${cls}">${esc(label)}</span>`;
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  // Checks
   const checksList = document.getElementById('checksList');
   checksList.innerHTML = '';
   for (const c of res.checks) {
     const icon = c.status === 'pass' ? '\u2713' : c.status === 'fail' ? '\u2717' : '\u2014';
     checksList.innerHTML += `<div class="check-row">
-      <span class="check-icon ${c.status}">${icon}</span>
+      <span class="check-icon ${esc(c.status)}">${icon}</span>
       <span class="check-name">${esc(c.name)}</span>
       <span class="check-detail">${esc(c.detail)}</span>
     </div>`;
   }
 
-  // Pack metadata
+  // Pack identity
   const metaGrid = document.getElementById('metaGrid');
   metaGrid.innerHTML = '';
-  if (res.manifest) {
-    const m = res.manifest;
-    const att = m.attestation || {};
-    const fields = [
-      ['Pack ID', m.pack_id],
-      ['Signer', m.signer_id],
-      ['Receipts', att.n_receipts],
-      ['Integrity', att.receipt_integrity],
-      ['Claims', att.claim_check],
-      ['Time', att.timestamp_start ? `${att.timestamp_start} \u2013 ${att.timestamp_end}` : null],
-      ['Fingerprint', m.pack_root_sha256 ? m.pack_root_sha256.slice(0, 32) + '...' : null],
-    ];
-    for (const [label, value] of fields) {
-      if (value != null) {
-        metaGrid.innerHTML += `<dt>${esc(label)}</dt><dd>${esc(String(value))}</dd>`;
-      }
+  const fields = [
+    ['Pack ID',     m.pack_id],
+    ['Signer',      m.signer_id ? `${m.signer_id}${signerFp}` : null],
+    ['Receipts',    att.n_receipts],
+    ['Integrity',   att.receipt_integrity],
+    ['Claims',      att.claim_check],
+    ['Time range',  att.timestamp_start ? `${fmtTimestamp(att.timestamp_start)} \u2013 ${fmtTimestamp(att.timestamp_end)}` : null],
+    ['Fingerprint', m.pack_root_sha256 ? m.pack_root_sha256.slice(0, 32) + '\u2026' : null],
+  ];
+  for (const [label, value] of fields) {
+    if (value != null) {
+      metaGrid.innerHTML += `<dt>${esc(label)}</dt><dd>${esc(String(value))}</dd>`;
     }
   }
 
-  // Receipts summary
-  if (res.receipts.length > 0) {
-    const receiptsSection = document.getElementById('receiptsSection');
-    receiptsSection.style.display = 'block';
+  // Receipts
+  const receiptsSection = document.getElementById('receiptsSection');
+  if (res.receipts && res.receipts.length > 0) {
+    receiptsSection.hidden = false;
     const receiptsList = document.getElementById('receiptsList');
     receiptsList.innerHTML = '';
     const typeCounts = {};
@@ -515,56 +1600,158 @@ async function handleFiles(fileList) {
     }
     for (const [type, count] of Object.entries(typeCounts).sort()) {
       receiptsList.innerHTML += `<div class="check-row">
-        <span class="check-icon pass">${count}</span>
+        <span class="check-icon pass" style="font-style:normal;font-weight:600">${count}</span>
         <span class="check-name">${esc(type)}</span>
         <span class="check-detail">${count === 1 ? 'receipt' : 'receipts'}</span>
       </div>`;
     }
-    // Show tool names for MCP receipts
     const mcpReceipts = res.receipts.filter(r => r.type === 'mcp_tool_call' && r.tool_name);
     if (mcpReceipts.length > 0) {
-      const toolNames = mcpReceipts.map(r => r.tool_name);
+      const toolNames = [...new Set(mcpReceipts.map(r => r.tool_name))];
       receiptsList.innerHTML += `<div class="check-row">
-        <span class="check-icon" style="color:var(--text-dim)">&rarr;</span>
+        <span class="check-icon" style="color:var(--text-dimmer)">&rarr;</span>
         <span class="check-name" style="color:var(--text-dim)">tools: ${esc(toolNames.join(', '))}</span>
         <span class="check-detail"></span>
       </div>`;
     }
+  } else {
+    receiptsSection.hidden = true;
   }
+
+  document.getElementById('resetBtn').style.display = 'block';
+  resultArea.style.display = 'block';
 }
 
+// ── Copy summary ───────────────────────────────────────────────────────────
+
+function copySummary() {
+  if (!lastResult) return;
+  const res = lastResult;
+
+  if (res.artifact_type === 'reviewer_packet') {
+    const signerLine = res.packet_manifest && res.packet_manifest.signer_identity
+      ? `${res.packet_manifest.signer_identity} (${(res.packet_manifest.signer_fingerprint || '').slice(0, 8)}\u2026)`
+      : 'unsigned';
+    const coverageLine = Object.entries(res.coverage_summary || {}).map(([status, count]) => `${status}=${count}`).join(', ') || 'none';
+    const failureLine = (res.failure_reasons || []).map(reason => reason.code).join(', ') || 'none';
+    const sep = '\u2500'.repeat(33);
+    const text = [
+      'Assay Reviewer Packet Verification',
+      sep,
+      `Packet ID:   ${res.packet_id || 'unknown'}`,
+      `Verdict:     ${String(res.settlement_state || 'UNKNOWN').replaceAll('_', ' ')}`,
+      `Signer:      ${signerLine}`,
+      `Proof pack:  ${res.proof_pack && res.proof_pack.verified ? 'verified' : 'failed'}`,
+      `Freshness:   ${res.freshness_state || 'unknown'}`,
+      `Coverage:    ${coverageLine}`,
+      `Failures:    ${failureLine}`,
+      `Verified:    ${new Date().toISOString()} (client-side)`,
+      sep,
+      'Verify: https://haserjian.github.io/assay-proof-gallery/verify.html',
+    ].join('\n');
+
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const orig = btn.innerHTML;
+      btn.innerHTML = btn.innerHTML.replace('Copy verification summary', 'Copied!');
+      setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    }).catch(() => {
+      prompt('Copy this verification summary:', text);
+    });
+    return;
+  }
+
+  const m = res.manifest || {};
+  const att = m.attestation || {};
+
+  let verdictText = 'UNKNOWN';
+  if (res.error) verdictText = 'ERROR';
+  else if (res.integrity === 'tampered') verdictText = 'TAMPERED';
+  else if (res.integrity === 'sig_invalid') verdictText = 'SIGNATURE INVALID';
+  else if (res.integrity === 'hash_only') verdictText = res.claims === 'fail' ? 'HONEST FAIL' : 'HASHES PASS';
+  else if (res.claims === 'fail') verdictText = 'HONEST FAIL';
+  else verdictText = 'PASS';
+
+  let integrityLine = 'Unknown';
+  if (res.integrity === 'tampered') integrityLine = `${res.hashFailCount || 1} hash mismatch(es) detected`;
+  else if (res.integrity === 'sig_invalid') integrityLine = 'Hashes match, Ed25519 invalid';
+  else if (res.integrity === 'hash_only') integrityLine = 'All hashes match, Ed25519 not supported in browser';
+  else integrityLine = 'All hashes match, Ed25519 signature valid';
+
+  const claimsLine = res.claims === 'fail' ? 'FAIL' : res.claims === 'pass' ? 'PASS' : 'N/A';
+  const signerLine = m.signer_id
+    ? `${m.signer_id} (${(m.signer_pubkey_sha256 || '').slice(0, 8)}\u2026)`
+    : 'unknown';
+
+  const sep = '\u2500'.repeat(33);
+  const now = new Date().toISOString();
+  const text = [
+    'Assay Verification Result',
+    sep,
+    `Pack ID:     ${m.pack_id || 'unknown'}`,
+    `Verdict:     ${verdictText}`,
+    `Integrity:   ${integrityLine}`,
+    `Claims:      ${claimsLine}`,
+    `Signer:      ${signerLine}`,
+    `Receipts:    ${att.n_receipts ?? 'unknown'}`,
+    `Evidence:    ${att.timestamp_start || 'unknown'}`,
+    `Verified:    ${now} (client-side)`,
+    sep,
+    'Verify: https://haserjian.github.io/assay-proof-gallery/verify.html',
+  ].join('\n');
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = btn.innerHTML.replace('Copy verification summary', 'Copied!');
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+  }).catch(() => {
+    prompt('Copy this verification summary:', text);
+  });
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
 function esc(s) {
+  if (s == null) return '';
   const d = document.createElement('div');
-  d.textContent = s;
+  d.textContent = String(s);
   return d.innerHTML;
 }
 
-// Event handlers
-dropZone.addEventListener('click', () => folderInput.click());
+function formatDate(isoStr) {
+  try {
+    return new Date(isoStr).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  } catch (e) { return isoStr; }
+}
 
-dropZone.addEventListener('dragover', e => {
-  e.preventDefault();
-  dropZone.classList.add('dragover');
-});
+function fmtTimestamp(isoStr) {
+  if (!isoStr) return '';
+  // Trim to seconds for display
+  return isoStr.replace(/\.\d+/, '').replace('+00:00', 'Z');
+}
+
+// ── Events ────────────────────────────────────────────────────────────────
+
+const dropZone = document.getElementById('dropZone');
+const folderInput = document.getElementById('folderInput');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => folderInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', e => {
   e.preventDefault();
   dropZone.classList.remove('dragover');
-  // Try to get files from dataTransfer
   const items = e.dataTransfer.items;
   if (items && items.length > 0 && items[0].webkitGetAsEntry) {
-    // Directory drop support
     const entries = [];
     const promises = [];
     for (const item of items) {
       const entry = item.webkitGetAsEntry();
       if (entry) promises.push(readEntry(entry, entries));
     }
-    Promise.all(promises).then(() => {
-      if (entries.length > 0) {
-        handleFiles(entries);
-      }
-    });
+    Promise.all(promises).then(() => { if (entries.length > 0) handleFiles(entries); });
   } else {
     handleFiles(e.dataTransfer.files);
   }
@@ -574,7 +1761,6 @@ function readEntry(entry, results) {
   return new Promise(resolve => {
     if (entry.isFile) {
       entry.file(f => {
-        // Preserve path info
         Object.defineProperty(f, 'webkitRelativePath', { value: entry.fullPath, writable: false });
         results.push(f);
         resolve();
@@ -592,16 +1778,26 @@ function readEntry(entry, results) {
 
 folderInput.addEventListener('change', e => handleFiles(e.target.files));
 fileInput.addEventListener('change', e => handleFiles(e.target.files));
-resetBtn.addEventListener('click', () => {
-  result.style.display = 'none';
-  resetBtn.style.display = 'none';
-  dropZone.style.display = '';
-  document.querySelector('.file-inputs').style.display = '';
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  document.getElementById('resultArea').style.display = 'none';
+  document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('receiptsSection').hidden = true;
+  setInputVisible(true);
   folderInput.value = '';
   fileInput.value = '';
-  document.getElementById('receiptsSection').style.display = 'none';
+  lastResult = null;
+  lastManifest = null;
 });
-</script>
 
+// Auto-load sample from URL parameter (e.g., ?sample=pass)
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const sample = params.get('sample');
+  if (sample && SAMPLE_PACKS[sample]) {
+    loadSample(sample);
+  }
+})();
+</script>
 </body>
 </html>
