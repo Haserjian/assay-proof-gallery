@@ -1,0 +1,74 @@
+{
+  "packet_id": "rp_pack_20260304T061703_2c002032",
+  "packet_version": "1.0",
+  "manifest_version": "1.0.0",
+  "artifact_type": "reviewer_packet_manifest",
+  "hash_alg": "sha256",
+  "attestation": {
+    "generated_at": "2026-03-11T00:00:00+00:00",
+    "proof_pack_manifest_sha256": "b605abbfee5e8dcced0b3cd29f39f1019b8fa88987028128165857da899e198f",
+    "settlement_state": "VERIFIED_WITH_GAPS",
+    "integrity_state": "PASS",
+    "claim_state": "PASS",
+    "scope_state": "BOUNDED",
+    "freshness_state": "FRESH",
+    "regression_state": "NONE",
+    "valid_for": "P30D",
+    "expires_at": "2026-04-10T00:00:00+00:00",
+    "boundary_hash": "efc375963888f6b739ec17db24bea7d8c691766463f41a85b31a2def43975309",
+    "mapping_hash": "7e0c558d978b0bbc2a688dfd58f2269e291aa2155f7d8a566e5556611a5bfde9",
+    "baseline_settlement_state": null
+  },
+  "files": [
+    {
+      "path": "SETTLEMENT.json",
+      "sha256": "b20c6a4030896fab26788c198a171887b20071a72e6fec7ad8256d3877894b7c",
+      "bytes": 993
+    },
+    {
+      "path": "SCOPE_MANIFEST.json",
+      "sha256": "219c645d9836461a96f40e3dfd100249534214361d1572a68cd0e63b886b6551",
+      "bytes": 1134
+    },
+    {
+      "path": "COVERAGE_MATRIX.md",
+      "sha256": "6683674e8123188a19099e20417a417af01d3673b4b135d1b70b9e6faa7eb74c",
+      "bytes": 768
+    },
+    {
+      "path": "REVIEWER_GUIDE.md",
+      "sha256": "1c81bfae6f0e4f4c53cff9b64cd79456af136540883340dc53171ca41e4a8eec",
+      "bytes": 682
+    },
+    {
+      "path": "EXECUTIVE_SUMMARY.md",
+      "sha256": "162ead7a2c26e10ebd5a4e9d61c2e86274bc31b0ef2534092c89fe41a26a5279",
+      "bytes": 378
+    },
+    {
+      "path": "VERIFY.md",
+      "sha256": "0f6abdf9e2b19f6c8b483345695a480176d516ac60ff0bfd86d26b50bde9b71f",
+      "bytes": 106
+    },
+    {
+      "path": "CHALLENGE.md",
+      "sha256": "75a83a768b0f4ff89097457c47a4acb2b860bd174cf897f44d344252d473fb42",
+      "bytes": 342
+    },
+    {
+      "path": "PACKET_INPUTS.json",
+      "sha256": "aa8d6e7f1031e18d7fd472f3f6baa975c485649d8fc47f33271b20b6ed1c5bd4",
+      "bytes": 2467
+    }
+  ],
+  "expected_files": [
+    "SETTLEMENT.json",
+    "SCOPE_MANIFEST.json",
+    "COVERAGE_MATRIX.md",
+    "REVIEWER_GUIDE.md",
+    "EXECUTIVE_SUMMARY.md",
+    "VERIFY.md",
+    "CHALLENGE.md",
+    "PACKET_INPUTS.json"
+  ]
+}
