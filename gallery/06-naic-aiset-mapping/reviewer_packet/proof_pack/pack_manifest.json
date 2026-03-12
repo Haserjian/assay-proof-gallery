@@ -1,0 +1,70 @@
+{
+  "pack_id": "pack_20260307T060831_1de9465d",
+  "pack_version": "0.1.0",
+  "manifest_version": "1.0.0",
+  "hash_alg": "sha256",
+  "attestation": {
+    "pack_format_version": "0.1.0",
+    "fingerprint_version": 1,
+    "pack_id": "pack_20260307T060831_1de9465d",
+    "run_id": "trace_20260307T060831_9f640976",
+    "suite_id": "manual",
+    "suite_hash": "36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88",
+    "verifier_version": "1.15.1",
+    "canon_version": "jcs-rfc8785",
+    "canon_impl": "receipts.jcs",
+    "canon_impl_version": "1.15.1",
+    "policy_hash": "4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f",
+    "claim_set_id": "none",
+    "claim_set_hash": "abbc9882b6cde415903178aaed71d703f59faa57e8eaba773c5846b8cfe27d7a",
+    "receipt_integrity": "PASS",
+    "claim_check": "PASS",
+    "discrepancy_fingerprint": "d281119587d420ce70ecc199f9a19c2939096713e60fd736952d621362028d74",
+    "assurance_level": "L0",
+    "proof_tier": "signed-pack",
+    "mode": "shadow",
+    "head_hash": "010e09e839a05fb4ccbf66b2e8f0dda38fed7fc60537894eace76e6a1a4ed89a",
+    "head_hash_algorithm": "last-receipt-digest-v0",
+    "time_authority": "local_clock",
+    "n_receipts": 5,
+    "timestamp_start": "2026-03-07T06:08:31.483376+00:00",
+    "timestamp_end": "2026-03-07T06:08:31.483772+00:00",
+    "ci_binding": null
+  },
+  "attestation_sha256": "6e6b34e48dd13ae0c93950734c6a4ab296e1320d8deee89bc47befebde32ebc8",
+  "suite_hash": "36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88",
+  "claim_set_id": "none",
+  "claim_set_hash": "abbc9882b6cde415903178aaed71d703f59faa57e8eaba773c5846b8cfe27d7a",
+  "receipt_count_expected": 5,
+  "files": [
+    {
+      "path": "receipt_pack.jsonl",
+      "sha256": "d79bd2e3568deb7a3476c08adb52a5fbb57de690d651925bfe5d83750d1a837a",
+      "bytes": 1937
+    },
+    {
+      "path": "verify_report.json",
+      "sha256": "83b423943e03bff13fedd3ffc68f08b5156d4be9bc4ee393b79a5fe9588b782f",
+      "bytes": 790
+    },
+    {
+      "path": "verify_transcript.md",
+      "sha256": "2560bd8815c9921135fc2dcae6b6a642e86802de5d7692e53550e6f94b22da43",
+      "bytes": 744
+    }
+  ],
+  "expected_files": [
+    "receipt_pack.jsonl",
+    "verify_report.json",
+    "verify_transcript.md",
+    "pack_manifest.json",
+    "pack_signature.sig"
+  ],
+  "signer_id": "ci-assay-signer",
+  "signer_pubkey": "vQOETX+XGDBhBEUwJG8vK+aG3q1TYy5+0q8j3+bzKMY=",
+  "signer_pubkey_sha256": "a211e933a251212953e8f535dc595d2c8c11545cee2f00a2ba20f4aa04e4b03d",
+  "signature_alg": "ed25519",
+  "signature_scope": "JCS(pack_manifest_without_signature)",
+  "signature": "C6tVkkb23WKEN3KeO+6r9PfQ24EOkEe/DDmL40DT0TF4JAHUG/eR/8+At6EB8YeBILKUtG+NXfg6egP2a4k/BQ==",
+  "pack_root_sha256": "6e6b34e48dd13ae0c93950734c6a4ab296e1320d8deee89bc47befebde32ebc8"
+}

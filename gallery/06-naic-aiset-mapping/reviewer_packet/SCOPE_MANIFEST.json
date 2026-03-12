@@ -1,0 +1,48 @@
+{
+  "workflow_name": "Insurance claims intake workflow",
+  "workflow_description": "AI-assisted claims intake, triage, and initial assessment for insurance carrier submissions.",
+  "repo_or_system_in_scope": "REPLACE_WITH_YOUR_REPO_OR_SYSTEM",
+  "entrypoints_in_scope": [
+    "claims_api.submit",
+    "triage_worker.classify",
+    "assessment_engine.evaluate",
+    "escalation_handler.route"
+  ],
+  "callsites_identified": 6,
+  "callsites_instrumented": 5,
+  "controls_declared": [
+    "min_receipt_count",
+    "model_call_present",
+    "guardian_verdict_present"
+  ],
+  "questions_mapped": [
+    "Does the system use AI/ML in its decision-making or operations?",
+    "Are AI model calls documented with inputs, outputs, and timing?",
+    "Is there a count of AI call sites and their instrumentation coverage?",
+    "Is there a governance framework for AI oversight?",
+    "Are runtime controls applied to AI decisions (guardrails, validators, policy checks)?",
+    "Is there an audit trail for AI decisions that an independent reviewer can verify?",
+    "Can the evidence be verified without access to the vendor's systems?",
+    "Is tamper detection in place for AI evidence and audit records?",
+    "Is the model identity recorded for each AI call?",
+    "Are model risk classifications documented?",
+    "Is there evidence of model validation or testing?",
+    "Are data retention and deletion policies in place for AI inputs/outputs?"
+  ],
+  "questions_out_of_scope": [
+    "Is training data provenance documented?",
+    "Does this evidence packet establish legal or regulatory compliance?"
+  ],
+  "excluded_components": [
+    "Admin-only backfill and migration paths",
+    "Legacy batch importer (pre-AI)",
+    "Internal reporting dashboards"
+  ],
+  "boundary_notes": [
+    "This boundary covers the AI-assisted claims intake path only.",
+    "Manual review and human-only processing paths are excluded.",
+    "Coverage is scoped to the declared entrypoints."
+  ],
+  "signed_at": "2026-03-12T04:43:42.839353+00:00",
+  "signed_by": "assay reviewer-packet compiler"
+}

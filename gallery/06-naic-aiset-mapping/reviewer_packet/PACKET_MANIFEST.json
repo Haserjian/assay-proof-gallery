@@ -1,0 +1,74 @@
+{
+  "packet_id": "rp_pack_20260307T060831_1de9465d",
+  "packet_version": "1.0",
+  "manifest_version": "1.0.0",
+  "artifact_type": "reviewer_packet_manifest",
+  "hash_alg": "sha256",
+  "attestation": {
+    "generated_at": "2026-03-12T04:43:42.839353+00:00",
+    "proof_pack_manifest_sha256": "0af7eeae6deab9e4f9c3c4846faa52509c1d99fee67307187dadae75677e0a47",
+    "settlement_state": "VERIFIED_WITH_GAPS",
+    "integrity_state": "PASS",
+    "claim_state": "PASS",
+    "scope_state": "BOUNDED",
+    "freshness_state": "FRESH",
+    "regression_state": "NONE",
+    "valid_for": "P30D",
+    "expires_at": "2026-04-11T04:43:42.839353+00:00",
+    "boundary_hash": "b9095f550b8e6574f19277df194e3c7275e2d9f5378740a224510226817cc87e",
+    "mapping_hash": "7f820c6bacba23f132d702999c04a2b376b606a0d6ed3ea2c786b45287d3b48f",
+    "baseline_settlement_state": null
+  },
+  "files": [
+    {
+      "path": "SETTLEMENT.json",
+      "sha256": "12283118fcc153f41eba1e029c4f1ff5c21f18d1e36484c61d4793cd537d4ed0",
+      "bytes": 1017
+    },
+    {
+      "path": "SCOPE_MANIFEST.json",
+      "sha256": "10704e322243d10c09e3e554523b4e652690425442429e0e48cf564f7eb5b40a",
+      "bytes": 2072
+    },
+    {
+      "path": "COVERAGE_MATRIX.md",
+      "sha256": "c15baee0056ee92ca26856c605faf606a59de28ca5302127fd73e480c06de42f",
+      "bytes": 4012
+    },
+    {
+      "path": "REVIEWER_GUIDE.md",
+      "sha256": "b8f16cb502a84a380125a1f9c84ea34132de7a1c5db2422cff7851078ba05bf4",
+      "bytes": 682
+    },
+    {
+      "path": "EXECUTIVE_SUMMARY.md",
+      "sha256": "73bdbc677ddc133a21ab3dfb82bbd7bea098cecf9ea091282b0e1b6775bfc60b",
+      "bytes": 378
+    },
+    {
+      "path": "VERIFY.md",
+      "sha256": "0f6abdf9e2b19f6c8b483345695a480176d516ac60ff0bfd86d26b50bde9b71f",
+      "bytes": 106
+    },
+    {
+      "path": "CHALLENGE.md",
+      "sha256": "75a83a768b0f4ff89097457c47a4acb2b860bd174cf897f44d344252d473fb42",
+      "bytes": 342
+    },
+    {
+      "path": "PACKET_INPUTS.json",
+      "sha256": "20cb12926cf18eab5294ef3edee8c5c48d1527f03c3c6b09a37b4c5b1717a7fa",
+      "bytes": 9162
+    }
+  ],
+  "expected_files": [
+    "SETTLEMENT.json",
+    "SCOPE_MANIFEST.json",
+    "COVERAGE_MATRIX.md",
+    "REVIEWER_GUIDE.md",
+    "EXECUTIVE_SUMMARY.md",
+    "VERIFY.md",
+    "CHALLENGE.md",
+    "PACKET_INPUTS.json"
+  ]
+}
