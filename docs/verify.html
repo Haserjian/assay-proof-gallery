@@ -752,6 +752,35 @@ const REVIEWER_REQUIRED_FILES = [
   'PACKET_MANIFEST.json',
 ];
 const COVERAGE_COLUMNS = ['Claim / Question', 'Status', 'Evidence', 'Scope', 'Notes'];
+const REVIEWER_SETTLEMENT_STATES = new Set([
+  'VERIFIED',
+  'VERIFIED_WITH_GAPS',
+  'INCOMPLETE_EVIDENCE',
+  'EVIDENCE_REGRESSION',
+  'TAMPERED',
+  'OUT_OF_SCOPE',
+]);
+const REVIEWER_INTEGRITY_STATES = new Set(['PASS', 'FAIL']);
+const REVIEWER_CLAIM_STATES = new Set(['PASS', 'FAIL']);
+const REVIEWER_SCOPE_STATES = new Set(['BOUNDED', 'OUT_OF_SCOPE']);
+const REVIEWER_FRESHNESS_STATES = new Set(['FRESH', 'STALE']);
+const REVIEWER_REGRESSION_STATES = new Set(['NONE', 'REGRESSED']);
+const REVIEWER_COVERAGE_STATUSES = new Set([
+  'EVIDENCED',
+  'PARTIAL',
+  'FAILED',
+  'HUMAN_ATTESTED',
+  'OUT_OF_SCOPE',
+]);
+const REVIEWER_EVIDENCE_REF_STATUSES = new Set([
+  'EVIDENCED',
+  'PARTIAL',
+  'FAILED',
+]);
+
+function isLowerHexSha256(value) {
+  return /^[0-9a-f]{64}$/.test(String(value || ''));
+}
 
 function hasFile(fileIndex, path) {
   return !!resolveManifestFile(fileIndex, path);
@@ -984,6 +1013,169 @@ function parseCoverageMatrix(markdown) {
   return rows;
 }
 
+function validateSettlementPayload(payload) {
+  const errors = [];
+  const requiredFields = [
+    'packet_id',
+    'packet_version',
+    'artifact_type',
+    'settlement_state',
+    'integrity_state',
+    'claim_state',
+    'scope_state',
+    'freshness_state',
+    'regression_state',
+    'generated_at',
+    'valid_for',
+    'expires_at',
+    'pack_manifest_sha256',
+    'proof_pack_path',
+    'settlement_basis',
+    'signer',
+    'trust_tier',
+  ];
+  for (const field of requiredFields) {
+    if (!(field in payload)) errors.push(`SETTLEMENT.json missing field: ${field}`);
+  }
+
+  if (payload.artifact_type !== 'reviewer_packet') {
+    errors.push('SETTLEMENT.json artifact_type must be reviewer_packet');
+  }
+  if (!REVIEWER_SETTLEMENT_STATES.has(String(payload.settlement_state || ''))) {
+    errors.push(`SETTLEMENT.json has unknown settlement_state: ${payload.settlement_state}`);
+  }
+  if (!REVIEWER_INTEGRITY_STATES.has(String(payload.integrity_state || ''))) {
+    errors.push(`SETTLEMENT.json has unknown integrity_state: ${payload.integrity_state}`);
+  }
+  if (!REVIEWER_CLAIM_STATES.has(String(payload.claim_state || ''))) {
+    errors.push(`SETTLEMENT.json has unknown claim_state: ${payload.claim_state}`);
+  }
+  if (!REVIEWER_SCOPE_STATES.has(String(payload.scope_state || ''))) {
+    errors.push(`SETTLEMENT.json has unknown scope_state: ${payload.scope_state}`);
+  }
+  if (!REVIEWER_FRESHNESS_STATES.has(String(payload.freshness_state || ''))) {
+    errors.push(`SETTLEMENT.json has unknown freshness_state: ${payload.freshness_state}`);
+  }
+  if (!REVIEWER_REGRESSION_STATES.has(String(payload.regression_state || ''))) {
+    errors.push(`SETTLEMENT.json has unknown regression_state: ${payload.regression_state}`);
+  }
+  if (!parseIso(String(payload.generated_at || ''))) {
+    errors.push('SETTLEMENT.json generated_at must be ISO-8601');
+  }
+  if (!parseIso(String(payload.expires_at || ''))) {
+    errors.push('SETTLEMENT.json expires_at must be ISO-8601');
+  }
+  if (!isLowerHexSha256(payload.pack_manifest_sha256)) {
+    errors.push('SETTLEMENT.json pack_manifest_sha256 must be a 64-char lowercase hex SHA-256');
+  }
+
+  const basis = payload.settlement_basis;
+  if (!Array.isArray(basis) || basis.length === 0 || basis.some(item => typeof item !== 'string' || item.length === 0)) {
+    errors.push('SETTLEMENT.json settlement_basis must be a non-empty list of strings');
+  }
+
+  const signer = payload.signer;
+  if (!signer || typeof signer !== 'object' || Array.isArray(signer)) {
+    errors.push('SETTLEMENT.json signer must be an object');
+  } else {
+    for (const key of ['mode', 'identity', 'fingerprint']) {
+      if (!signer[key]) errors.push(`SETTLEMENT.json signer missing field: ${key}`);
+    }
+  }
+
+  if (!payload.trust_tier) {
+    errors.push('SETTLEMENT.json trust_tier must be non-empty');
+  }
+
+  return errors;
+}
+
+function validateScopeManifest(payload) {
+  const errors = [];
+  for (const field of ['questions_mapped', 'questions_out_of_scope', 'signed_at', 'signed_by']) {
+    if (!(field in payload)) errors.push(`SCOPE_MANIFEST.json missing field: ${field}`);
+  }
+
+  if (!parseIso(String(payload.signed_at || ''))) {
+    errors.push('SCOPE_MANIFEST.json signed_at must be ISO-8601');
+  }
+  if (!payload.signed_by) {
+    errors.push('SCOPE_MANIFEST.json signed_by must be non-empty');
+  }
+
+  for (const key of ['questions_mapped', 'questions_out_of_scope']) {
+    const value = payload[key];
+    if (!Array.isArray(value) || value.some(item => typeof item !== 'string')) {
+      errors.push(`SCOPE_MANIFEST.json ${key} must be a list of strings`);
+    }
+  }
+
+  return errors;
+}
+
+function splitEvidenceRefs(cell) {
+  if (!cell || cell === 'None') return [];
+  const refs = [];
+  for (const segment of String(cell).split(';')) {
+    for (const item of segment.split(' and ')) {
+      const ref = item.trim().replace(/^`+|`+$/g, '');
+      if (ref) refs.push(ref);
+    }
+  }
+  return refs;
+}
+
+async function validateCoverageRows(fileIndex, rows, scopeManifest) {
+  const errors = [];
+  const mappedQuestions = new Set(Array.isArray(scopeManifest.questions_mapped) ? scopeManifest.questions_mapped.map(String) : []);
+  const outOfScopeQuestions = new Set(Array.isArray(scopeManifest.questions_out_of_scope) ? scopeManifest.questions_out_of_scope.map(String) : []);
+  const jsonCache = new Map();
+
+  for (const row of rows) {
+    const status = row.Status;
+    if (!REVIEWER_COVERAGE_STATUSES.has(status)) {
+      errors.push(`COVERAGE_MATRIX.md has unknown row status: ${status}`);
+      continue;
+    }
+
+    const question = row['Claim / Question'];
+    if (status === 'OUT_OF_SCOPE') {
+      if (outOfScopeQuestions.size > 0 && !outOfScopeQuestions.has(question)) {
+        errors.push(`COVERAGE_MATRIX.md out-of-scope row not declared in SCOPE_MANIFEST.json: ${question}`);
+      }
+    } else if (mappedQuestions.size > 0 && !mappedQuestions.has(question)) {
+      errors.push(`COVERAGE_MATRIX.md in-scope row not declared in SCOPE_MANIFEST.json: ${question}`);
+    }
+
+    if (!REVIEWER_EVIDENCE_REF_STATUSES.has(status)) {
+      continue;
+    }
+
+    for (const ref of splitEvidenceRefs(row.Evidence)) {
+      const hashIndex = ref.indexOf('#');
+      const filePart = hashIndex >= 0 ? ref.slice(0, hashIndex) : ref;
+      const pointer = hashIndex >= 0 ? ref.slice(hashIndex + 1) : '';
+      if (!hasFile(fileIndex, filePart)) {
+        errors.push(`COVERAGE_MATRIX.md evidence target missing: ${filePart}`);
+        continue;
+      }
+      if (pointer && filePart.endsWith('.json')) {
+        let payload = jsonCache.get(filePart);
+        if (!payload) {
+          payload = await readJsonFile(fileIndex, filePart);
+          jsonCache.set(filePart, payload);
+        }
+        const resolved = resolvePointer(payload, pointer);
+        if (!resolved.ok) {
+          errors.push(`COVERAGE_MATRIX.md evidence pointer not found: ${ref}`);
+        }
+      }
+    }
+  }
+
+  return errors;
+}
+
 function deriveRegressionState(coverageRows, baselineState) {
   if (!baselineState) return 'NONE';
   const hasGap = coverageRows.some(row => ['PARTIAL', 'FAILED', 'HUMAN_ATTESTED'].includes(row['Status']));
@@ -1052,25 +1244,74 @@ async function verifyPack(fileIndex, manifestPath = 'pack_manifest.json') {
     }
   }
 
+  for (const expectedPath of Array.isArray(manifest.expected_files) ? manifest.expected_files : []) {
+    const file = resolveManifestFile(fileIndex, prefixedPath(root, expectedPath));
+    if (!file) {
+      checks.push({ name: expectedPath, status: 'fail', detail: 'expected file missing' });
+      hashFailed = true;
+      hashFailCount += 1;
+    }
+  }
+
   const pubkey = manifest.signer_pubkey;
   const sig = manifest.signature;
+  const signerPubkeySha256 = manifest.signer_pubkey_sha256;
   let sigResult = null;
-  if (pubkey && sig && manifest.signature_scope === 'JCS(pack_manifest_without_signature)') {
+  if (!sig) {
+    checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'manifest missing signature' });
+  } else if (pubkey && manifest.signature_scope === 'JCS(pack_manifest_without_signature)') {
     const manifestCopy = {};
     for (const key of Object.keys(manifest)) {
       if (key !== 'signature' && key !== 'pack_root_sha256') manifestCopy[key] = manifest[key];
     }
-    sigResult = await verifySignature(pubkey, sig, jcs(manifestCopy));
-    if (sigResult === true) {
-      checks.push({ name: 'Ed25519 signature', status: 'pass', detail: `signer: ${manifest.signer_id || 'unknown'}` });
-    } else if (sigResult === false) {
-      checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'signature verification failed' });
-    } else {
-      warnings.push('Browser lacks Ed25519 support; proof-pack verification is hash-only in this session.');
-      checks.push({ name: 'Ed25519 signature', status: 'skip', detail: 'browser lacks Ed25519 support (hash checks still valid)' });
+    let signatureBytes = null;
+    try {
+      signatureBytes = b64ToBytes(sig);
+    } catch (e) {
+      checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'signature is not valid base64' });
+    }
+
+    const detachedSignatureFile = resolveManifestFile(fileIndex, prefixedPath(root, 'pack_signature.sig'));
+    if (signatureBytes && !detachedSignatureFile) {
+      checks.push({ name: 'Detached signature', status: 'fail', detail: 'pack_signature.sig missing' });
+    } else if (signatureBytes) {
+      const detachedSignatureBytes = new Uint8Array(await detachedSignatureFile.arrayBuffer());
+      if (!bytesEqual(detachedSignatureBytes, signatureBytes)) {
+        checks.push({ name: 'Detached signature', status: 'fail', detail: 'pack_signature.sig does not match manifest signature' });
+      }
+    }
+
+    let pubkeyBytes = null;
+    try {
+      pubkeyBytes = b64ToBytes(pubkey);
+    } catch (e) {
+      checks.push({ name: 'Embedded signer key', status: 'fail', detail: 'signer_pubkey is not valid base64' });
+    }
+
+    if (pubkeyBytes && signerPubkeySha256) {
+      const actualFingerprint = await sha256Hex(pubkeyBytes);
+      if (actualFingerprint !== signerPubkeySha256) {
+        checks.push({ name: 'Embedded signer key', status: 'fail', detail: 'signer_pubkey does not match signer_pubkey_sha256' });
+        pubkeyBytes = null;
+      }
+    }
+
+    const sigChecksPassed = !checks.some(check =>
+      ['Ed25519 signature', 'Detached signature', 'Embedded signer key'].includes(check.name) && check.status === 'fail'
+    );
+    if (sigChecksPassed) {
+      sigResult = await verifySignature(pubkey, sig, jcs(manifestCopy));
+      if (sigResult === true) {
+        checks.push({ name: 'Ed25519 signature', status: 'pass', detail: `signer: ${manifest.signer_id || 'unknown'}` });
+      } else if (sigResult === false) {
+        checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'signature verification failed' });
+      } else {
+        warnings.push('Browser lacks Ed25519 support; proof-pack verification is hash-only in this session.');
+        checks.push({ name: 'Ed25519 signature', status: 'skip', detail: 'browser lacks Ed25519 support (hash checks still valid)' });
+      }
     }
   } else {
-    checks.push({ name: 'Ed25519 signature', status: 'skip', detail: 'manifest missing signature fields' });
+    checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'manifest missing embedded signer_pubkey or signature_scope is invalid' });
   }
 
   const receipts = [];
@@ -1083,7 +1324,7 @@ async function verifyPack(fileIndex, manifestPath = 'pack_manifest.json') {
     }
   }
 
-  const sigFailed = checks.some(check => check.name === 'Ed25519 signature' && check.status === 'fail');
+  const sigFailed = checks.some(check => ['Ed25519 signature', 'Detached signature', 'Embedded signer key'].includes(check.name) && check.status === 'fail');
   let integrity;
   if (hashFailed) integrity = 'tampered';
   else if (sigFailed) integrity = 'sig_invalid';
@@ -1151,8 +1392,12 @@ async function verifyReviewerPacket(fileIndex) {
     const coverageSummary = {};
     for (const row of expectedCoverageRows) coverageSummary[row['Status']] = (coverageSummary[row['Status']] || 0) + 1;
 
-    const errors = [];
+    const errors = [
+      ...validateSettlementPayload(settlement),
+      ...validateScopeManifest(scopeManifest),
+    ];
     const warnings = [...(proofPackResult.warnings || [])];
+    errors.push(...(await validateCoverageRows(fileIndex, coverageRows, scopeManifest)));
     const packetManifestErrors = [];
     let packetHashesOk = true;
     for (const entry of packetManifest.files || []) {
@@ -1200,12 +1445,35 @@ async function verifyReviewerPacket(fileIndex) {
         if (key !== 'signature') packetCopy[key] = packetManifest[key];
       }
       if (detachedPacketSignatureMatches) {
-        packetSigResult = await verifySignature(packetManifest.signer_pubkey, packetManifest.signature, jcs(packetCopy));
-        if (packetSigResult === null) {
-          warnings.push('Browser lacks Ed25519 support; packet-manifest verification is hash-only in this session.');
-        }
-        if (packetSigResult === false) {
-          packetManifestErrors.push('PACKET_MANIFEST.json signature verification failed');
+        const signerPubkey = String(packetManifest.signer_pubkey || '');
+        const expectedFingerprint = String(packetManifest.signer_pubkey_sha256 || '');
+        if (!signerPubkey) {
+          packetManifestErrors.push('PACKET_MANIFEST.json cannot be verified: missing embedded signer_pubkey and no keystore fallback');
+          packetSigResult = false;
+        } else {
+          let pubkeyBytes = null;
+          try {
+            pubkeyBytes = b64ToBytes(signerPubkey);
+          } catch (e) {
+            packetManifestErrors.push('PACKET_MANIFEST.json signer_pubkey is not valid base64');
+            packetSigResult = false;
+          }
+          if (pubkeyBytes && expectedFingerprint) {
+            const actualFingerprint = await sha256Hex(pubkeyBytes);
+            if (actualFingerprint !== expectedFingerprint) {
+              packetManifestErrors.push('Embedded packet signer_pubkey does not match signer_pubkey_sha256');
+              packetSigResult = false;
+            }
+          }
+          if (packetSigResult !== false) {
+            packetSigResult = await verifySignature(signerPubkey, packetManifest.signature, jcs(packetCopy));
+            if (packetSigResult === null) {
+              warnings.push('Browser lacks Ed25519 support; packet-manifest verification is hash-only in this session.');
+            }
+            if (packetSigResult === false) {
+              packetManifestErrors.push('PACKET_MANIFEST.json signature verification failed');
+            }
+          }
         }
       }
     } else if (!packetManifest.signature) {
