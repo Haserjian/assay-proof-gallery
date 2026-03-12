@@ -629,7 +629,7 @@
   <div class="section">
     <div class="section-label">Example scenarios</div>
     <p class="prose" style="margin-bottom: 1rem;">
-      Five public artifacts from the real toolchain: three proof-pack verdicts, one reviewer packet, and one MCP proxy scenario.
+      Six public artifacts from the real toolchain: three proof-pack verdicts, one reviewer packet, one insurance vertical mapping, and one MCP proxy scenario.
     </p>
 
     <div class="scenarios">
@@ -746,6 +746,40 @@ assay verify-pack ./gallery/05-reviewer-packet-gaps/reviewer_packet/proof_pack</
             <div class="sc-meta-item"><span class="sc-meta-label">Coverage</span><span class="sc-meta-value">1 evidenced / 1 partial</span></div>
           </div>
           <div class="sc-fingerprint">Packet warns that the packet manifest is unsigned; the nested proof pack remains signed and verifiable.</div>
+        </details>
+      </div>
+
+      <!-- Scenario 06 — NAIC AISET -->
+      <div class="scenario" style="border-color: rgba(47,129,247,0.22);">
+        <div class="sc-header">
+          <div>
+            <div style="font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--amber);margin-bottom:0.25rem;">Insurance vertical mapping</div>
+            <div class="sc-title">NAIC AISET Questionnaire Packet</div>
+          </div>
+          <span class="outcome-badge honest-fail">VERIFIED WITH GAPS</span>
+        </div>
+        <div class="sc-desc">
+          14 AISET-aligned questions mapped to proof-pack evidence.
+          8 are machine-provable. 3 require human attestation. 2 are explicitly out of scope.
+          <strong>The first verifiable evidence format mapped to the insurance AI questionnaire shape.</strong>
+        </div>
+        <div class="sc-links">
+          <a href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/06-naic-aiset-mapping/reviewer_packet">View packet</a>
+          <a href="https://github.com/Haserjian/assay-proof-gallery/blob/main/gallery/06-naic-aiset-mapping/reviewer_packet/COVERAGE_MATRIX.md">Coverage matrix</a>
+        </div>
+        <details class="sc-secondary">
+          <summary class="sc-secondary-label">Details</summary>
+          <div class="sc-details-content">assay vendorq export-reviewer \
+  --proof-pack ./proof_pack \
+  --boundary ./boundary.json \
+  --mapping src/assay/mappings/naic_aiset/question_mapping.json \
+  --out ./naic_aiset_packet</div>
+          <div class="sc-meta">
+            <div class="sc-meta-item"><span class="sc-meta-label">Evidenced</span><span class="sc-meta-value" style="color:var(--green)">8</span></div>
+            <div class="sc-meta-item"><span class="sc-meta-label">Partial</span><span class="sc-meta-value" style="color:var(--amber)">1</span></div>
+            <div class="sc-meta-item"><span class="sc-meta-label">Human-attested</span><span class="sc-meta-value">3</span></div>
+            <div class="sc-meta-item"><span class="sc-meta-label">Out of scope</span><span class="sc-meta-value">2</span></div>
+          </div>
         </details>
       </div>
 
