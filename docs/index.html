@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assay Proof Gallery</title>
-  <meta name="description" content="Independently verifiable AI governance evidence. Proof packs you can inspect, verify, and forward — no vendor access required.">
+  <meta name="description" content="AI evidence that's harder to fake and easier to verify. Proof packs you can inspect, verify, and forward — no vendor trust required.">
   <meta property="og:title" content="Assay Proof Gallery">
-  <meta property="og:description" content="Independently verifiable AI governance evidence. Proof packs you can inspect, verify, and forward — no vendor access required.">
+  <meta property="og:description" content="AI evidence that's harder to fake and easier to verify. Proof packs you can inspect, verify, and forward — no vendor trust required.">
   <meta property="og:type" content="website">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -206,6 +206,11 @@
       background: rgba(248, 81, 73, 0.12);
       color: var(--red);
       border: 1px solid rgba(248, 81, 73, 0.3);
+    }
+    .outcome-badge.packet-review {
+      background: rgba(47, 129, 247, 0.12);
+      color: var(--blue);
+      border: 1px solid rgba(47, 129, 247, 0.3);
     }
     .outcome-text {
       font-size: 0.8125rem;
@@ -513,6 +518,34 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- HARDER TO FAKE                                                         -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <div class="section">
+    <div class="section-label">What becomes harder to fake</div>
+    <div class="prose">
+      <p>
+        Assay doesn't make fraud impossible. It makes post-hoc tampering, silent
+        weakening, and selective evidence presentation much harder to get away with:
+      </p>
+    </div>
+    <ul class="question-list">
+      <li>Edit evidence after a run &mdash; verification fails</li>
+      <li>Drop or weaken locked checks &mdash; lock mismatch exposes it</li>
+      <li>Omit covered call sites &mdash; completeness checks catch it</li>
+      <li>Hand a buyer internal logs &mdash; buyer verifies offline instead</li>
+    </ul>
+    <div class="prose" style="margin-top: 0.75rem;">
+      <p>
+        <strong>Assay proves the evidence artifact has not been quietly changed after
+        the fact.</strong> It does not, by itself, prove every upstream component was honest.
+        Stronger deployment patterns &mdash; CI-held signing keys, transparency logs,
+        external timestamping &mdash; raise the cost of full fabrication further.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
   <!-- TRY IT NOW                                                             -->
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
 
@@ -527,7 +560,7 @@
         <a class="try-btn t-honest-fail" href="verify.html?sample=honest-fail">HONEST FAIL</a>
         <a class="try-btn t-tampered" href="verify.html?sample=tampered">TAMPERED</a>
       </div>
-      <p class="try-note">Client-side verification. Reviewer packets and proof packs resolve to the same contract, just at different layers.</p>
+      <p class="try-note">Client-side verification. Proof packs prove integrity; reviewer packets add settlement context. These are different layers, not the same contract.</p>
     </div>
   </div>
 
@@ -605,7 +638,7 @@
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
 
   <div class="section">
-    <div class="section-label">Three outcomes</div>
+    <div class="section-label">Verification outcomes</div>
     <div class="outcomes">
       <div class="outcome">
         <span class="outcome-badge pass">PASS</span>
@@ -613,7 +646,7 @@
       </div>
       <div class="outcome">
         <span class="outcome-badge honest-fail">HONEST FAIL</span>
-        <span class="outcome-text"><strong>Authentic evidence, declared standards fail.</strong> The pack is intact, but the system violated its own standard. The failure is sealed &mdash; it cannot be rewritten after signing.</span>
+        <span class="outcome-text"><strong>Authentic evidence, declared standards fail.</strong> The pack is intact, but the system violated its own standard. The failure is sealed &mdash; it cannot be rewritten after signing. A signed failure is stronger evidence than a vague pass.</span>
       </div>
       <div class="outcome">
         <span class="outcome-badge tampered">TAMPERED</span>
@@ -725,7 +758,7 @@ assay verify-pack ./gallery/03-tamper-demo/tampered   # exit 2</div>
       <div class="scenario" style="border-color: rgba(47,129,247,0.22);">
         <div class="sc-header">
           <div class="sc-title">AcmeSaaS Support Workflow Reviewer Packet</div>
-          <span class="outcome-badge honest-fail">VERIFIED WITH GAPS</span>
+          <span class="outcome-badge packet-review">VERIFIED WITH GAPS</span>
         </div>
         <div class="sc-desc">
           A buyer-facing reviewer packet wrapped around a signed proof pack. The nested proof verifies cleanly, but one workflow boundary remains partial.
@@ -756,7 +789,7 @@ assay verify-pack ./gallery/05-reviewer-packet-gaps/reviewer_packet/proof_pack</
             <div style="font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--amber);margin-bottom:0.25rem;">Insurance vertical mapping</div>
             <div class="sc-title">NAIC AISET Questionnaire Packet</div>
           </div>
-          <span class="outcome-badge honest-fail">VERIFIED WITH GAPS</span>
+          <span class="outcome-badge packet-review">VERIFIED WITH GAPS</span>
         </div>
         <div class="sc-desc">
           14 AISET-aligned questions mapped to proof-pack evidence.
@@ -844,8 +877,10 @@ assay verify-pack ./gallery/05-reviewer-packet-gaps/reviewer_packet/proof_pack</
 
   <div class="caveat">
     <strong>Trust boundary:</strong>
-    Assay proves post-hoc integrity of the pack, not source honesty at creation time.
-    If the instrumented code lies about what it called, the receipt will faithfully record that lie.
+    Assay proves the evidence artifact has not been quietly changed after the fact.
+    It does not, by itself, prove every upstream component was honest.
+    Stronger deployment patterns &mdash; CI-held signing keys, transparency logs,
+    external timestamping &mdash; raise the cost of full fabrication.
     The trust boundary is tamper-evidence, not omniscience.
   </div>
 
