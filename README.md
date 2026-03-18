@@ -33,11 +33,17 @@ No account. No API call. No vendor-hosted logs or vendor dashboard required.
 
 ## Exit code semantics
 
-| Exit | Meaning | Trust interpretation |
-|------|---------|----------------------|
+| Exit | Verdict | What it means |
+|------|---------|---------------|
 | `0` | PASS | Integrity intact, all declared claims pass |
-| `1` | HONEST FAIL | Pack intact, evidence proves a standards violation — cannot be rewritten |
-| `2` | TAMPERED | Pack bytes were altered after signing — integrity broken |
+| `1` | HONEST FAIL | Pack intact, behavioral claims failed — sealed, cannot be rewritten |
+| `2` | TAMPERED | Evidence bytes altered after signing — integrity broken |
+
+Exit 1 is **not tool failure**. It is the tool working correctly to report
+that the AI system did not meet its own declared standards.
+
+See [GALLERY_VOCABULARY.md](GALLERY_VOCABULARY.md) for the full vocabulary
+and what verification does and does not prove.
 
 ---
 
@@ -47,6 +53,12 @@ No account. No API call. No vendor-hosted logs or vendor dashboard required.
 
 All evidence present, all claims pass. 5 receipts: 3 model calls, 1 guardian
 verdict, 1 capability use. Ed25519 signature valid, all hashes match.
+
+| Field | Value |
+|-------|-------|
+| Verification | PASS |
+| Proves | Evidence integrity intact; declared behavioral claims satisfied |
+| Does not prove | AI behavior was correct; signer is authorized; evidence was honestly created |
 
 → [gallery/01-fintech-pass/](gallery/01-fintech-pass/)
 
@@ -60,6 +72,12 @@ This is the most important scenario: **honest failure is audit gold.**
 The evidence proves the system violated its own declared standard, and
 that proof cannot be altered.
 
+| Field | Value |
+|-------|-------|
+| Verification | HONEST_FAIL |
+| Proves | Evidence integrity intact; behavioral claim failure is sealed and verifiable |
+| Does not prove | Why the claim failed; whether the failure matters for your use case |
+
 → [gallery/02-insurance-honest-fail/](gallery/02-insurance-honest-fail/)
 
 ### 03 — DataCo Tamper Demo (exit 2)
@@ -67,6 +85,12 @@ that proof cannot be altered.
 A clean proof pack, then one byte changed in `receipt_pack.jsonl`. The
 verifier returns exit 2. The manifest and signature are untouched — the
 SHA-256 mismatch is all that is needed to detect the tamper.
+
+| Field | Value |
+|-------|-------|
+| Verification | TAMPERED |
+| Proves | Evidence bytes were altered after signing; integrity is broken |
+| Does not prove | Who tampered; when; whether the original was correct |
 
 → [gallery/03-tamper-demo/](gallery/03-tamper-demo/)
 
@@ -76,6 +100,12 @@ An AI agent calls three MCP tools — weather, inventory, risk — through the A
 MCP Notary Proxy. Every tool call is receipted with arguments, results, timing,
 and server identity. The proof pack is signed and verifiable without trusting the
 agent, the tool server, or the platform.
+
+| Field | Value |
+|-------|-------|
+| Verification | PASS |
+| Proves | Tool call evidence was receipted and integrity is intact |
+| Does not prove | Tool responses were correct; agent reasoning was sound |
 
 → [gallery/04-mcp-notary-proxy/](gallery/04-mcp-notary-proxy/)
 
