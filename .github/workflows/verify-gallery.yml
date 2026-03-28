@@ -55,3 +55,45 @@ jobs:
         run: |
           assay verify-pack gallery/03-tamper-demo/good
           echo "OK: clean pack returned exit 0"
+
+      - name: Check browser verifier bundle provenance
+        run: |
+          if [ ! -f docs/VERIFIER_PROVENANCE.json ]; then
+            echo "ERROR: docs/VERIFIER_PROVENANCE.json not found"
+            exit 1
+          fi
+          EXPECTED_SHA=$(python3 -c "import json; print(json.load(open('docs/VERIFIER_PROVENANCE.json'))['bundle_sha256'])")
+          ACTUAL_SHA=$(sha256sum docs/assay-verify.js | cut -d' ' -f1)
+          if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
+            echo "ERROR: verifier bundle hash mismatch"
+            echo "  Expected: $EXPECTED_SHA"
+            echo "  Actual:   $ACTUAL_SHA"
+            exit 1
+          fi
+          echo "OK: bundle hash matches provenance ($ACTUAL_SHA)"
+
+      - name: Check browser verifier freshness
+        run: |
+          SYNCED=$(python3 -c "import json; print(json.load(open('docs/VERIFIER_PROVENANCE.json'))['synced_at'])")
+          DAYS_AGO=$(python3 -c "
+          from datetime import datetime, timezone
+          synced = datetime.fromisoformat('$SYNCED'.replace('Z', '+00:00'))
+          now = datetime.now(timezone.utc)
+          print((now - synced).days)
+          ")
+          echo "Bundle synced $DAYS_AGO days ago"
+          if [ "$DAYS_AGO" -gt 45 ]; then
+            echo "ERROR: verifier bundle is $DAYS_AGO days old (max: 45). Run scripts/sync-verifier.sh"
+            exit 1
+          elif [ "$DAYS_AGO" -gt 14 ]; then
+            echo "WARNING: verifier bundle is $DAYS_AGO days old. Consider running scripts/sync-verifier.sh"
+          fi
+
+      - name: Assert no inline verifyPack function remains
+        run: |
+          if grep -q 'function verifyPack' docs/verify.html; then
+            echo "ERROR: inline verifyPack function found in verify.html"
+            echo "The browser verifier must use the canonical assay-verify-ts bundle."
+            exit 1
+          fi
+          echo "OK: no inline verifyPack in verify.html"

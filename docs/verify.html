@@ -586,13 +586,16 @@ body {
       <a href="https://github.com/Haserjian/assay">GitHub</a>
     </div>
     <div>Client-side only. No data leaves your browser.</div>
-    <div class="footer-version">Assay v1.17.0</div>
+    <div class="footer-version" id="verifierProvenance">Assay Verifier (loading provenance...)</div>
   </footer>
 
 </div>
 
-<script>
+<script type="module">
 'use strict';
+
+// ── Canonical verifier (from assay-verify-ts) ─────────────────────────────
+import { verifyPack as canonicalVerifyPack } from "./assay-verify.js";
 
 // ── Embedded sample pack data ──────────────────────────────────────────────
 
@@ -602,6 +605,7 @@ const SAMPLE_PACKS = {
     'pack_manifest.json': JSON.stringify({"pack_id":"pack_20260307T060831_1de9465d","pack_version":"0.1.0","manifest_version":"1.0.0","hash_alg":"sha256","attestation":{"pack_format_version":"0.1.0","fingerprint_version":1,"pack_id":"pack_20260307T060831_1de9465d","run_id":"trace_20260307T060831_9f640976","suite_id":"manual","suite_hash":"36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88","verifier_version":"1.15.1","canon_version":"jcs-rfc8785","canon_impl":"receipts.jcs","canon_impl_version":"1.15.1","policy_hash":"4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f","claim_set_id":"none","claim_set_hash":"abbc9882b6cde415903178aaed71d703f59faa57e8eaba773c5846b8cfe27d7a","receipt_integrity":"PASS","claim_check":"PASS","discrepancy_fingerprint":"d281119587d420ce70ecc199f9a19c2939096713e60fd736952d621362028d74","assurance_level":"L0","proof_tier":"signed-pack","mode":"shadow","head_hash":"010e09e839a05fb4ccbf66b2e8f0dda38fed7fc60537894eace76e6a1a4ed89a","head_hash_algorithm":"last-receipt-digest-v0","time_authority":"local_clock","n_receipts":5,"timestamp_start":"2026-03-07T06:08:31.483376+00:00","timestamp_end":"2026-03-07T06:08:31.483772+00:00","ci_binding":null},"attestation_sha256":"6e6b34e48dd13ae0c93950734c6a4ab296e1320d8deee89bc47befebde32ebc8","suite_hash":"36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88","claim_set_id":"none","claim_set_hash":"abbc9882b6cde415903178aaed71d703f59faa57e8eaba773c5846b8cfe27d7a","receipt_count_expected":5,"files":[{"path":"receipt_pack.jsonl","sha256":"d79bd2e3568deb7a3476c08adb52a5fbb57de690d651925bfe5d83750d1a837a","bytes":1937},{"path":"verify_report.json","sha256":"83b423943e03bff13fedd3ffc68f08b5156d4be9bc4ee393b79a5fe9588b782f","bytes":790},{"path":"verify_transcript.md","sha256":"2560bd8815c9921135fc2dcae6b6a642e86802de5d7692e53550e6f94b22da43","bytes":744}],"expected_files":["receipt_pack.jsonl","verify_report.json","verify_transcript.md","pack_manifest.json","pack_signature.sig"],"signer_id":"ci-assay-signer","signer_pubkey":"vQOETX+XGDBhBEUwJG8vK+aG3q1TYy5+0q8j3+bzKMY=","signer_pubkey_sha256":"a211e933a251212953e8f535dc595d2c8c11545cee2f00a2ba20f4aa04e4b03d","signature_alg":"ed25519","signature_scope":"JCS(pack_manifest_without_signature)","signature":"C6tVkkb23WKEN3KeO+6r9PfQ24EOkEe/DDmL40DT0TF4JAHUG/eR/8+At6EB8YeBILKUtG+NXfg6egP2a4k/BQ==","pack_root_sha256":"6e6b34e48dd13ae0c93950734c6a4ab296e1320d8deee89bc47befebde32ebc8"}),
 
     'receipt_pack.jsonl': '{"_stored_at":"2026-03-07T06:08:31.483383+00:00","_trace_id":"trace_20260307T060831_9f640976","input_tokens":1847,"latency_ms":1203,"model_id":"claude-sonnet-4-20250514","output_tokens":494,"provider":"anthropic","receipt_id":"r_2d3a03ae610b","schema_version":"3.0","seq":0,"task":"loan_application_analysis","timestamp":"2026-03-07T06:08:31.483376+00:00","total_tokens":2341,"type":"model_call"}\n{"_stored_at":"2026-03-07T06:08:31.483610+00:00","_trace_id":"trace_20260307T060831_9f640976","dignity_gate":"pass","parent_receipt_id":"r_2d3a03ae610b","rationale":"Authorized credit check within consent scope","receipt_id":"r_14cd53ae5dc4","risk_score":0.18,"schema_version":"3.0","seq":1,"timestamp":"2026-03-07T06:08:31.483605+00:00","tool":"credit_bureau_query","type":"guardian_verdict","verdict":"allow"}\n{"_stored_at":"2026-03-07T06:08:31.483679+00:00","_trace_id":"trace_20260307T060831_9f640976","input_tokens":743,"latency_ms":847,"model_id":"claude-sonnet-4-20250514","output_tokens":238,"provider":"anthropic","receipt_id":"r_0bac25a36851","schema_version":"3.0","seq":2,"task":"decision_synthesis","timestamp":"2026-03-07T06:08:31.483676+00:00","total_tokens":981,"type":"model_call"}\n{"_stored_at":"2026-03-07T06:08:31.483729+00:00","_trace_id":"trace_20260307T060831_9f640976","authorized":true,"capability":"file_write","parent_receipt_id":"r_0bac25a36851","receipt_id":"r_488e16007fb3","schema_version":"3.0","seq":3,"target":"/output/loan_decision.json","timestamp":"2026-03-07T06:08:31.483727+00:00","type":"capability_use"}\n{"_stored_at":"2026-03-07T06:08:31.483774+00:00","_trace_id":"trace_20260307T060831_9f640976","input_tokens":489,"latency_ms":521,"model_id":"claude-sonnet-4-20250514","output_tokens":123,"provider":"anthropic","receipt_id":"r_13b2f9b893ba","schema_version":"3.0","seq":4,"task":"adverse_action_explanation","timestamp":"2026-03-07T06:08:31.483772+00:00","total_tokens":612,"type":"model_call"}\n',
+    'pack_signature.sig': { base64: 'C6tVkkb23WKEN3KeO+6r9PfQ24EOkEe/DDmL40DT0TF4JAHUG/eR/8+At6EB8YeBILKUtG+NXfg6egP2a4k/BQ==' },
 
     'verify_report.json': '{\n  "pack_id": "pack_20260307T060831_1de9465d",\n  "run_id": "trace_20260307T060831_9f640976",\n  "passed": true,\n  "errors": [],\n  "warnings": [],\n  "receipt_count": 5,\n  "head_hash": "010e09e839a05fb4ccbf66b2e8f0dda38fed7fc60537894eace76e6a1a4ed89a",\n  "verified_at": "2026-03-07T06:08:31.501873+00:00",\n  "verifier_version": "1.15.1",\n  "claim_verification": {\n    "passed": true,\n    "n_claims": 1,\n    "n_passed": 1,\n    "n_failed": 0,\n    "discrepancy_fingerprint": "d281119587d420ce70ecc199f9a19c2939096713e60fd736952d621362028d74",\n    "results": [\n      {\n        "claim_id": "minimum_receipt_coverage",\n        "passed": true,\n        "expected": ">= 3 receipts",\n        "actual": "5 receipts",\n        "severity": "critical",\n        "evidence_receipt_ids": []\n      }\n    ]\n  }\n}',
 
@@ -612,6 +616,7 @@ const SAMPLE_PACKS = {
     'pack_manifest.json': JSON.stringify({"pack_id":"pack_20260307T060837_0fa00c86","pack_version":"0.1.0","manifest_version":"1.0.0","hash_alg":"sha256","attestation":{"pack_format_version":"0.1.0","fingerprint_version":1,"pack_id":"pack_20260307T060837_0fa00c86","run_id":"trace_20260307T060837_d020f6ca","suite_id":"manual","suite_hash":"36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88","verifier_version":"1.15.1","canon_version":"jcs-rfc8785","canon_impl":"receipts.jcs","canon_impl_version":"1.15.1","policy_hash":"4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f","claim_set_id":"none","claim_set_hash":"d58ee4af712e280d457155e3a18db46ae902d7c9780fa5a780dd3fb19cc1a738","receipt_integrity":"PASS","claim_check":"FAIL","discrepancy_fingerprint":"42c3bd9106f409f3402987f0077c3935f53bf33ffc746762fa75d8cc953337eb","assurance_level":"L0","proof_tier":"signed-pack","mode":"shadow","head_hash":"0200b4197e7db225c6015f2a500825cae105f9ca5cb3516be952ae1768c4aaae","head_hash_algorithm":"last-receipt-digest-v0","time_authority":"local_clock","n_receipts":3,"timestamp_start":"2026-03-07T06:08:37.721090+00:00","timestamp_end":"2026-03-07T06:08:37.721796+00:00","ci_binding":null},"attestation_sha256":"bc9fee15d819fc3ee5681e5234a58a1b5c765813b71621e469d0d753ae158f85","suite_hash":"36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88","claim_set_id":"none","claim_set_hash":"d58ee4af712e280d457155e3a18db46ae902d7c9780fa5a780dd3fb19cc1a738","receipt_count_expected":3,"files":[{"path":"receipt_pack.jsonl","sha256":"e4de561945fc1e0b2139fc9200480cdf7e2d55edf0a93a66c9eaa8de187e48e1","bytes":1196},{"path":"verify_report.json","sha256":"66bd1db2b5169af92c4caaf0306c2a27d29b2192996e4914900a19b2f78d8517","bytes":793},{"path":"verify_transcript.md","sha256":"380e64cfff82dac0c2cf832720bc451816b5aa424fec18bd533845b4f1716ecf","bytes":744}],"expected_files":["receipt_pack.jsonl","verify_report.json","verify_transcript.md","pack_manifest.json","pack_signature.sig"],"signer_id":"ci-assay-signer","signer_pubkey":"vQOETX+XGDBhBEUwJG8vK+aG3q1TYy5+0q8j3+bzKMY=","signer_pubkey_sha256":"a211e933a251212953e8f535dc595d2c8c11545cee2f00a2ba20f4aa04e4b03d","signature_alg":"ed25519","signature_scope":"JCS(pack_manifest_without_signature)","signature":"PIk5O1LFWxbsLcDL32X9SVdwJeZfMI4XqPqWSAkgoGNtPv9FL8HjguoHF6G+S6tlWxPS05A+s68vTFz1RCJUBg==","pack_root_sha256":"bc9fee15d819fc3ee5681e5234a58a1b5c765813b71621e469d0d753ae158f85"}),
 
     'receipt_pack.jsonl': '{"_stored_at":"2026-03-07T06:08:37.721095+00:00","_trace_id":"trace_20260307T060837_d020f6ca","input_tokens":1401,"latency_ms":1089,"model_id":"claude-sonnet-4-20250514","output_tokens":422,"provider":"anthropic","receipt_id":"r_db7d9c01758a","schema_version":"3.0","seq":0,"task":"claims_document_review","timestamp":"2026-03-07T06:08:37.721090+00:00","total_tokens":1823,"type":"model_call"}\n{"_stored_at":"2026-03-07T06:08:37.721366+00:00","_trace_id":"trace_20260307T060837_d020f6ca","dignity_gate":"pass","parent_receipt_id":"r_db7d9c01758a","rationale":"Read-only access to authorized claims data","receipt_id":"r_b9ef7b075dcb","risk_score":0.09,"schema_version":"3.0","seq":1,"timestamp":"2026-03-07T06:08:37.721362+00:00","tool":"claims_database_read","type":"guardian_verdict","verdict":"allow"}\n{"_stored_at":"2026-03-07T06:08:37.721801+00:00","_trace_id":"trace_20260307T060837_d020f6ca","input_tokens":612,"latency_ms":634,"model_id":"claude-sonnet-4-20250514","output_tokens":132,"provider":"anthropic","receipt_id":"r_c309e77de382","schema_version":"3.0","seq":2,"task":"coverage_determination","timestamp":"2026-03-07T06:08:37.721796+00:00","total_tokens":744,"type":"model_call"}\n',
+    'pack_signature.sig': { base64: 'PIk5O1LFWxbsLcDL32X9SVdwJeZfMI4XqPqWSAkgoGNtPv9FL8HjguoHF6G+S6tlWxPS05A+s68vTFz1RCJUBg==' },
 
     'verify_report.json': '{\n  "pack_id": "pack_20260307T060837_0fa00c86",\n  "run_id": "trace_20260307T060837_d020f6ca",\n  "passed": true,\n  "errors": [],\n  "warnings": [],\n  "receipt_count": 3,\n  "head_hash": "0200b4197e7db225c6015f2a500825cae105f9ca5cb3516be952ae1768c4aaae",\n  "verified_at": "2026-03-07T06:08:37.737372+00:00",\n  "verifier_version": "1.15.1",\n  "claim_verification": {\n    "passed": false,\n    "n_claims": 1,\n    "n_passed": 0,\n    "n_failed": 1,\n    "discrepancy_fingerprint": "42c3bd9106f409f3402987f0077c3935f53bf33ffc746762fa75d8cc953337eb",\n    "results": [\n      {\n        "claim_id": "minimum_receipt_coverage",\n        "passed": false,\n        "expected": ">= 10 receipts",\n        "actual": "3 receipts",\n        "severity": "critical",\n        "evidence_receipt_ids": []\n      }\n    ]\n  }\n}',
 
@@ -623,6 +628,7 @@ const SAMPLE_PACKS = {
 
     // This content does NOT match the sha256 in the manifest — intentional tamper demo
     'receipt_pack.jsonl': '{"finish_reason":"stop","input_tokens":1800,"latency_ms":1100,"model_id":"gpt-5","output_tokens":700,"provider":"openai","receipt_id":"r_chal_001","schema_version":"3.0","seq":0,"timestamp":"2026-02-10T12:00:00Z","total_tokens":2500,"type":"model_call"}\n{"action":"generate_summary","reason":"Content is within policy bounds","receipt_id":"r_chal_002","schema_version":"3.0","seq":1,"timestamp":"2026-02-10T12:00:01Z","type":"guardian_verdict","verdict":"allow"}\n{"finish_reason":"stop","input_tokens":1300,"latency_ms":950,"model_id":"gpt-4","output_tokens":600,"provider":"openai","receipt_id":"r_chal_003","schema_version":"3.0","seq":2,"timestamp":"2026-02-10T12:00:02Z","total_tokens":1900,"type":"model_call"}\n',
+    'pack_signature.sig': { base64: 'iQfu/yq+NQ9LwqaUw2v9tQyYo7GGG0JgU+TCq6LYq5rADrghKPg5Kg6Gnb9tFVYXH0TolHfleNzyAJGluMoWDg==' },
 
     'verify_report.json': '{\n  "pack_id": "pack_20260307T060838_e3df25c7",\n  "run_id": "challenge-run",\n  "passed": true,\n  "errors": [],\n  "warnings": [],\n  "receipt_count": 3,\n  "head_hash": "c127de94295454ff632be131ca6be013db05135e26be8fac6b0cfe47a3ff08dd",\n  "verified_at": "2026-03-07T06:08:38.221097+00:00",\n  "verifier_version": "1.15.1",\n  "claim_verification": {\n    "passed": true,\n    "n_claims": 2,\n    "n_passed": 2,\n    "n_failed": 0,\n    "discrepancy_fingerprint": "fcaad82aad52a2b3552c5f56e75e36ac90346ec81c25e2b01f62485cf68aee01",\n    "results": [\n      {\n        "claim_id": "has_model_calls",\n        "passed": true,\n        "expected": "at least 1 receipt of type \'model_call\'",\n        "actual": "found 2",\n        "severity": "critical",\n        "evidence_receipt_ids": [\n          "r_chal_001",\n          "r_chal_003"\n        ]\n      },\n      {\n        "claim_id": "guardian_enforced",\n        "passed": true,\n        "expected": "at least 1 receipt of type \'guardian_verdict\'",\n        "actual": "found 1",\n        "severity": "critical",\n        "evidence_receipt_ids": [\n          "r_chal_002"\n        ]\n      }\n    ]\n  }\n}',
 
@@ -742,7 +748,13 @@ function resolveManifestFile(index, manifestPath) {
   return null;
 }
 
-// ── Verification engine ────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+// GALLERY-LOCAL (non-canonical)
+// The functions below are NOT powered by the canonical assay-verify-ts
+// verifier. They provide reviewer-packet verification as a gallery-local
+// feature until assay-verify-ts adds reviewer-packet support.
+// See: https://github.com/Haserjian/assay-proof-gallery/issues/1
+// ══════════════════════════════════════════════════════════════════════════
 
 const REVIEWER_REQUIRED_FILES = [
   'SETTLEMENT.json',
@@ -1206,114 +1218,41 @@ function appendFailureReason(failureReasons, seen, code, message) {
   failureReasons.push({ code, message });
 }
 
-async function verifyPack(fileIndex, manifestPath = 'pack_manifest.json') {
-  const checks = [];
-  const warnings = [];
-  let manifest = null;
+// ── Canonical proof-pack verification adapter ─────────────────────────────
+// Bridges the canonical verifyPack (PackContents → VerifyResult) to the
+// gallery's result shape expected by renderResult().
+// Replaces the former inline verifyPack. See issue #1.
+async function verifyProofPack(fileIndex, manifestPath = 'pack_manifest.json') {
   const root = packRoot(manifestPath);
-
   const manifestFile = resolveManifestFile(fileIndex, manifestPath);
   if (!manifestFile) {
-    return { artifact_type: 'proof_pack', integrity: 'error', claims: null, error: `${manifestPath} not found in selected files.`, checks: [], warnings: [], manifest: null, receipts: [] };
+    return { artifact_type: 'proof_pack', integrity: 'error', claims: null, error: manifestPath + ' not found in selected files.', checks: [], warnings: [], manifest: null, receipts: [] };
   }
 
+  let manifest;
   try {
     manifest = JSON.parse(await manifestFile.text());
   } catch (e) {
-    return { artifact_type: 'proof_pack', integrity: 'error', claims: null, error: `${manifestPath} is not valid JSON.`, checks: [], warnings: [], manifest: null, receipts: [] };
+    return { artifact_type: 'proof_pack', integrity: 'error', claims: null, error: manifestPath + ' is not valid JSON.', checks: [], warnings: [], manifest: null, receipts: [] };
   }
 
-  let hashFailed = false;
-  let hashFailCount = 0;
-  const declaredFiles = Array.isArray(manifest.files) ? manifest.files : [];
-  for (const entry of declaredFiles) {
-    const file = resolveManifestFile(fileIndex, prefixedPath(root, entry.path));
-    if (!file) {
-      checks.push({ name: entry.path, status: 'fail', detail: 'file missing' });
-      hashFailed = true;
-      hashFailCount += 1;
-      continue;
-    }
-    const hash = await sha256Hex(await file.arrayBuffer());
-    if (hash === entry.sha256) {
-      checks.push({ name: entry.path, status: 'pass', detail: `SHA-256 \u2713 (${hash.slice(0, 16)}\u2026)` });
-    } else {
-      checks.push({ name: entry.path, status: 'fail', detail: `SHA-256 mismatch: expected ${entry.sha256.slice(0, 16)}\u2026, got ${hash.slice(0, 16)}\u2026` });
-      hashFailed = true;
-      hashFailCount += 1;
+  // Build PackContents for canonical verifier
+  const packFiles = new Map();
+  const allPaths = [
+    ...(Array.isArray(manifest.files) ? manifest.files.map(f => f.path) : []),
+    ...(Array.isArray(manifest.expected_files) ? manifest.expected_files : []),
+  ];
+  for (const relPath of new Set(allPaths)) {
+    const file = resolveManifestFile(fileIndex, prefixedPath(root, relPath));
+    if (file) {
+      packFiles.set(relPath, new Uint8Array(await file.arrayBuffer()));
     }
   }
 
-  for (const expectedPath of Array.isArray(manifest.expected_files) ? manifest.expected_files : []) {
-    const file = resolveManifestFile(fileIndex, prefixedPath(root, expectedPath));
-    if (!file) {
-      checks.push({ name: expectedPath, status: 'fail', detail: 'expected file missing' });
-      hashFailed = true;
-      hashFailCount += 1;
-    }
-  }
+  // Run canonical verification (synchronous)
+  const result = canonicalVerifyPack({ manifest, files: packFiles });
 
-  const pubkey = manifest.signer_pubkey;
-  const sig = manifest.signature;
-  const signerPubkeySha256 = manifest.signer_pubkey_sha256;
-  let sigResult = null;
-  if (!sig) {
-    checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'manifest missing signature' });
-  } else if (pubkey && manifest.signature_scope === 'JCS(pack_manifest_without_signature)') {
-    const manifestCopy = {};
-    for (const key of Object.keys(manifest)) {
-      if (key !== 'signature' && key !== 'pack_root_sha256') manifestCopy[key] = manifest[key];
-    }
-    let signatureBytes = null;
-    try {
-      signatureBytes = b64ToBytes(sig);
-    } catch (e) {
-      checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'signature is not valid base64' });
-    }
-
-    const detachedSignatureFile = resolveManifestFile(fileIndex, prefixedPath(root, 'pack_signature.sig'));
-    if (signatureBytes && !detachedSignatureFile) {
-      checks.push({ name: 'Detached signature', status: 'fail', detail: 'pack_signature.sig missing' });
-    } else if (signatureBytes) {
-      const detachedSignatureBytes = new Uint8Array(await detachedSignatureFile.arrayBuffer());
-      if (!bytesEqual(detachedSignatureBytes, signatureBytes)) {
-        checks.push({ name: 'Detached signature', status: 'fail', detail: 'pack_signature.sig does not match manifest signature' });
-      }
-    }
-
-    let pubkeyBytes = null;
-    try {
-      pubkeyBytes = b64ToBytes(pubkey);
-    } catch (e) {
-      checks.push({ name: 'Embedded signer key', status: 'fail', detail: 'signer_pubkey is not valid base64' });
-    }
-
-    if (pubkeyBytes && signerPubkeySha256) {
-      const actualFingerprint = await sha256Hex(pubkeyBytes);
-      if (actualFingerprint !== signerPubkeySha256) {
-        checks.push({ name: 'Embedded signer key', status: 'fail', detail: 'signer_pubkey does not match signer_pubkey_sha256' });
-        pubkeyBytes = null;
-      }
-    }
-
-    const sigChecksPassed = !checks.some(check =>
-      ['Ed25519 signature', 'Detached signature', 'Embedded signer key'].includes(check.name) && check.status === 'fail'
-    );
-    if (sigChecksPassed) {
-      sigResult = await verifySignature(pubkey, sig, jcs(manifestCopy));
-      if (sigResult === true) {
-        checks.push({ name: 'Ed25519 signature', status: 'pass', detail: `signer: ${manifest.signer_id || 'unknown'}` });
-      } else if (sigResult === false) {
-        checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'signature verification failed' });
-      } else {
-        warnings.push('Browser lacks Ed25519 support; proof-pack verification is hash-only in this session.');
-        checks.push({ name: 'Ed25519 signature', status: 'skip', detail: 'browser lacks Ed25519 support (hash checks still valid)' });
-      }
-    }
-  } else {
-    checks.push({ name: 'Ed25519 signature', status: 'fail', detail: 'manifest missing embedded signer_pubkey or signature_scope is invalid' });
-  }
-
+  // Parse receipts for display
   const receipts = [];
   const receiptFile = resolveManifestFile(fileIndex, prefixedPath(root, 'receipt_pack.jsonl'));
   if (receiptFile) {
@@ -1324,32 +1263,46 @@ async function verifyPack(fileIndex, manifestPath = 'pack_manifest.json') {
     }
   }
 
-  const sigFailed = checks.some(check => ['Ed25519 signature', 'Detached signature', 'Embedded signer key'].includes(check.name) && check.status === 'fail');
-  let integrity;
-  if (hashFailed) integrity = 'tampered';
-  else if (sigFailed) integrity = 'sig_invalid';
-  else if (sigResult === null) integrity = 'hash_only';
-  else integrity = 'pass';
+  // Map VerifyResult → gallery result shape
+  const hasFileHashError = result.errors.some(e =>
+    e.code === 'E_MANIFEST_TAMPER' && e.field &&
+    e.field !== 'head_hash' && e.field !== 'attestation_sha256' && e.field !== 'pack_root_sha256'
+  );
+  const hasSigError = result.errors.some(e => e.code === 'E_PACK_SIG_INVALID');
+  const hasPathEscape = result.errors.some(e => e.code === 'E_PATH_ESCAPE');
 
+  let integrity;
+  if (hasFileHashError || hasPathEscape) integrity = 'tampered';
+  else if (hasSigError) integrity = 'sig_invalid';
+  else if (result.passed) integrity = 'pass';
+  else integrity = 'tampered';
+
+  const att = manifest.attestation || {};
   let claims = null;
-  if (integrity === 'pass' || integrity === 'hash_only') {
-    const att = manifest.attestation || {};
-    if (att.claim_check === 'FAIL') {
-      claims = 'fail';
-      checks.push({ name: 'Claim check', status: 'fail', detail: 'attestation.claim_check = FAIL (honest failure)' });
-    } else if (att.claim_check === 'PASS') {
-      claims = 'pass';
-      checks.push({ name: 'Claim check', status: 'pass', detail: 'attestation.claim_check = PASS' });
-    } else if (att.claim_check == null) {
-      claims = 'pass';
-      checks.push({ name: 'Claim check', status: 'skip', detail: 'no claim_check in attestation' });
-    } else {
-      claims = 'unknown';
-      checks.push({ name: 'Claim check', status: 'skip', detail: `attestation.claim_check = ${att.claim_check}` });
+  if (integrity === 'pass') {
+    claims = att.claim_check === 'FAIL' ? 'fail' : 'pass';
+  }
+
+  // Map stages → checks for UI
+  const checks = result.stages.map(s => ({
+    name: s.stage,
+    status: s.status === 'ok' ? 'pass' : s.status,
+    detail: s.reason || (s.detail ? JSON.stringify(s.detail) : (s.status === 'ok' ? 'OK' : '')),
+  }));
+  for (const err of result.errors) {
+    if (!checks.some(c => c.name === err.field)) {
+      checks.push({ name: err.field || err.code, status: 'fail', detail: err.message });
     }
   }
 
-  return { artifact_type: 'proof_pack', integrity, claims, error: null, checks, warnings, manifest, receipts, sigResult, hashFailCount, manifestPath };
+  const hashFailCount = result.errors.filter(e => e.code === 'E_MANIFEST_TAMPER').length;
+
+  return {
+    artifact_type: 'proof_pack', integrity, claims, error: null, checks,
+    warnings: [], manifest, receipts,
+    sigResult: integrity === 'pass' ? true : (hasSigError ? false : null),
+    hashFailCount, manifestPath,
+  };
 }
 
 async function verifyReviewerPacket(fileIndex) {
@@ -1368,7 +1321,7 @@ async function verifyReviewerPacket(fileIndex) {
     const proofPackPath = normalizeRelativePath(settlement.proof_pack_path || './proof_pack');
     const proofPackManifestPath = `${proofPackPath}/pack_manifest.json`;
     const proofPackVerifyPath = `${proofPackPath}/verify_report.json`;
-    const proofPackResult = await verifyPack(fileIndex, proofPackManifestPath);
+    const proofPackResult = await verifyProofPack(fileIndex, proofPackManifestPath);
     const proofPackManifest = await readJsonFile(fileIndex, proofPackManifestPath);
     const verifyReport = await readJsonFile(fileIndex, proofPackVerifyPath);
     const attestation = proofPackManifest.attestation || {};
@@ -1620,7 +1573,7 @@ async function verifyReviewerPacket(fileIndex) {
 async function verifyAnyArtifact(fileIndex) {
   const isReviewerPacket = REVIEWER_REQUIRED_FILES.every(fileName => hasFile(fileIndex, fileName));
   if (isReviewerPacket) return await verifyReviewerPacket(fileIndex);
-  const proofPackResult = await verifyPack(fileIndex);
+  const proofPackResult = await verifyProofPack(fileIndex);
   proofPackResult.command = 'verify-pack';
   proofPackResult.status = proofPackResult.error ? 'error' : (proofPackResult.integrity === 'pass' ? 'ok' : 'failed');
   return proofPackResult;
@@ -1632,6 +1585,18 @@ function makeFileFromString(path, content) {
   const relativePath = String(path).replace(/^\.?\//, '');
   const fileName = relativePath.split('/').pop();
   const blob = new Blob([content], { type: 'text/plain' });
+  const file = new File([blob], fileName);
+  Object.defineProperty(file, 'webkitRelativePath', { value: relativePath, writable: false });
+  return file;
+}
+
+function makeFileFromBase64(path, base64Content) {
+  const relativePath = String(path).replace(/^\.?\//, '');
+  const fileName = relativePath.split('/').pop();
+  const binary = atob(base64Content);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  const blob = new Blob([bytes], { type: 'application/octet-stream' });
   const file = new File([blob], fileName);
   Object.defineProperty(file, 'webkitRelativePath', { value: relativePath, writable: false });
   return file;
@@ -1663,7 +1628,12 @@ async function loadSample(key) {
   }
   const pack = SAMPLE_PACKS[key];
   if (!pack) return;
-  const files = Object.entries(pack).map(([name, content]) => makeFileFromString(name, content));
+  const files = Object.entries(pack).map(([name, content]) => {
+    if (content && typeof content === 'object' && typeof content.base64 === 'string') {
+      return makeFileFromBase64(name, content.base64);
+    }
+    return makeFileFromString(name, content);
+  });
   await handleFiles(files);
 }
 
@@ -1716,6 +1686,11 @@ function renderReviewerPacketResult(res) {
   verdictCard.className = 'verdict-card';
   detailSectionTitle.textContent = 'Packet Details';
 
+  // Non-canonical notice for reviewer packets
+  const noticeEl = document.createElement('div');
+  noticeEl.style.cssText = 'margin-top:0.75rem;padding:0.5rem 0.75rem;background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--radius-sm);font-size:0.8125rem;color:var(--amber)';
+  noticeEl.textContent = 'Non-canonical: gallery-local verification (not powered by assay-verify-ts)';
+
   if (res.error) {
     verdictCard.classList.add('state-error');
     verdictLabel.textContent = 'ERROR';
@@ -1749,6 +1724,9 @@ function renderReviewerPacketResult(res) {
   }
 
   stalenessPill.innerHTML = `<span class="staleness-pill ${res.freshness_state === 'FRESH' ? 'fresh' : 'stale'}">Freshness: ${esc(res.freshness_state || 'UNKNOWN')}</span>`;
+
+  // Append non-canonical notice to verdict card
+  verdictCard.appendChild(noticeEl);
 
   const signerIdentity = res.packet_manifest && res.packet_manifest.signer_identity ? res.packet_manifest.signer_identity : 'unsigned';
   const signerFp = res.packet_manifest && res.packet_manifest.signer_fingerprint ? ` (${res.packet_manifest.signer_fingerprint.slice(0, 8)}\u2026)` : '';
@@ -2145,6 +2123,20 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     loadSample(sample);
   }
 })();
+
+// ── Provenance ────────────────────────────────────────────────────────────
+fetch('./VERIFIER_PROVENANCE.json')
+  .then(r => r.ok ? r.json() : null)
+  .then(p => {
+    if (!p) return;
+    const el = document.getElementById('verifierProvenance');
+    if (el) el.textContent = 'Verifier: assay-verify-ts @ ' + p.source_commit.slice(0, 7) + ' | ' + p.contract_version + ' | Synced: ' + p.synced_at.slice(0, 10);
+  })
+  .catch(() => {});
+
+// Expose functions for onclick handlers (module scope is not global)
+window.loadSample = loadSample;
+window.copySummary = copySummary;
 </script>
 </body>
 </html>
