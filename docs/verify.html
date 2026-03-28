@@ -1686,8 +1686,10 @@ function renderReviewerPacketResult(res) {
   verdictCard.className = 'verdict-card';
   detailSectionTitle.textContent = 'Packet Details';
 
-  // Non-canonical notice for reviewer packets
+  // Remove any previous non-canonical notice before adding a new one
+  verdictCard.querySelectorAll('.non-canonical-notice').forEach(el => el.remove());
   const noticeEl = document.createElement('div');
+  noticeEl.className = 'non-canonical-notice';
   noticeEl.style.cssText = 'margin-top:0.75rem;padding:0.5rem 0.75rem;background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--radius-sm);font-size:0.8125rem;color:var(--amber)';
   noticeEl.textContent = 'Non-canonical: gallery-local verification (not powered by assay-verify-ts)';
 
@@ -1809,8 +1811,9 @@ function renderResult(res) {
   const stalenessPill = document.getElementById('stalenessPill');
   document.getElementById('detailSectionTitle').textContent = 'Receipts';
 
-  // Reset classes
+  // Reset classes and remove any stale non-canonical notice from previous render
   verdictCard.className = 'verdict-card';
+  verdictCard.querySelectorAll('.non-canonical-notice').forEach(el => el.remove());
 
   if (res.error) {
     verdictCard.classList.add('state-error');
