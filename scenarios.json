@@ -3,36 +3,114 @@
     {
       "id": "01-fintech-pass",
       "description": "FintechCo loan approval AI -- all evidence present, all claims pass",
+      "scenario_class": "tutorial_demo",
+      "primary_audience": [
+        "engineer",
+        "buyer"
+      ],
+      "claim_class": "proof_pack_pass",
+      "verification_command": "verify_pack",
+      "primary_artifact_path": "proof_pack",
       "expected_verification_exit_code": 0,
       "expected_integrity": "PASS",
       "expected_claims": "PASS",
+      "expected_reviewer_settlement": null,
+      "expected_nested_pack_exit_code": null,
       "built": true,
       "actual_exit_code": 0
     },
     {
       "id": "02-insurance-honest-fail",
       "description": "InsuranceTech claims review -- evidence intact, declared coverage claim fails",
+      "scenario_class": "engineering_verification",
+      "primary_audience": [
+        "engineer",
+        "reviewer"
+      ],
+      "claim_class": "honest_fail",
+      "verification_command": "verify_pack",
+      "primary_artifact_path": "proof_pack",
       "expected_verification_exit_code": 1,
       "expected_integrity": "PASS",
       "expected_claims": "FAIL",
+      "expected_reviewer_settlement": null,
+      "expected_nested_pack_exit_code": null,
       "built": true,
       "actual_exit_code": 1
     },
     {
       "id": "03-tamper-demo",
       "description": "DataCo analytics AI -- tampered pack (one byte changed), integrity fails",
+      "scenario_class": "tutorial_demo",
+      "primary_audience": [
+        "engineer",
+        "buyer"
+      ],
+      "claim_class": "tamper_detection",
+      "verification_command": "verify_pack",
+      "primary_artifact_path": "tampered",
       "expected_verification_exit_code": 2,
       "expected_integrity": "FAIL",
       "expected_claims": null,
+      "expected_reviewer_settlement": null,
+      "expected_nested_pack_exit_code": null,
       "built": true,
       "actual_exit_code": 2
     },
     {
       "id": "04-mcp-notary-proxy",
       "description": "LogisticsCo supply chain agent -- MCP tool calls notarized via proxy, integrity verified",
+      "scenario_class": "engineering_verification",
+      "primary_audience": [
+        "engineer",
+        "security"
+      ],
+      "claim_class": "mcp_notary",
+      "verification_command": "verify_pack",
+      "primary_artifact_path": "proof_pack",
       "expected_verification_exit_code": 0,
       "expected_integrity": "PASS",
       "expected_claims": null,
+      "expected_reviewer_settlement": null,
+      "expected_nested_pack_exit_code": null,
+      "built": true,
+      "actual_exit_code": 0
+    },
+    {
+      "id": "05-reviewer-packet-gaps",
+      "description": "AcmeSaaS support workflow reviewer packet -- authentic packet with explicit coverage gaps",
+      "scenario_class": "reviewer_packet",
+      "primary_audience": [
+        "buyer",
+        "reviewer"
+      ],
+      "claim_class": "reviewer_packet",
+      "verification_command": "reviewer_verify",
+      "primary_artifact_path": "reviewer_packet",
+      "expected_verification_exit_code": 0,
+      "expected_integrity": "PASS",
+      "expected_claims": "PASS",
+      "expected_reviewer_settlement": "VERIFIED_WITH_GAPS",
+      "expected_nested_pack_exit_code": 0,
+      "built": true,
+      "actual_exit_code": 0
+    },
+    {
+      "id": "06-naic-aiset-mapping",
+      "description": "NAIC AISET reviewer packet -- insurance control mapping backed by proof-pack evidence",
+      "scenario_class": "regulatory_control_mapping",
+      "primary_audience": [
+        "buyer",
+        "compliance"
+      ],
+      "claim_class": "naic_aiset_mapping",
+      "verification_command": "reviewer_verify",
+      "primary_artifact_path": "reviewer_packet",
+      "expected_verification_exit_code": 0,
+      "expected_integrity": "PASS",
+      "expected_claims": "PASS",
+      "expected_reviewer_settlement": "VERIFIED_WITH_GAPS",
+      "expected_nested_pack_exit_code": 0,
       "built": true,
       "actual_exit_code": 0
     }

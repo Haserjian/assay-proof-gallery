@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # Verify this proof pack locally. Expected result: INTEGRITY FAIL (tampered) (exit 2)
-set -e
-pip install assay-ai -q
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+python3 -m pip install assay-ai -q
 echo ""
 echo "Verifying tampered..."
 echo ""
 set +e
+cd "$SCRIPT_DIR"
 assay verify-pack ./tampered
 EXIT=$?
 set -e

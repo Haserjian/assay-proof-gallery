@@ -31,14 +31,6 @@ SCENARIO_VERIFY_FLAGS: dict[str, list[str]] = {
     "02-insurance-honest-fail": ["--require-claim-pass"],
 }
 
-# Which subpath holds the primary verifiable pack per scenario.
-SCENARIO_PACK_SUBPATH: dict[str, str] = {
-    "01-fintech-pass": "proof_pack",
-    "02-insurance-honest-fail": "proof_pack",
-    "03-tamper-demo": "tampered",  # tampered is the exit-2 artifact
-    "04-mcp-notary-proxy": "proof_pack",
-}
-
 REQUIRED_PACK_FILES = [
     "pack_manifest.json",
     "pack_signature.sig",
@@ -47,44 +39,24 @@ REQUIRED_PACK_FILES = [
     "verify_transcript.md",
 ]
 
+REQUIRED_REVIEWER_PACKET_FILES = [
+    "SETTLEMENT.json",
+    "SCOPE_MANIFEST.json",
+    "COVERAGE_MATRIX.md",
+    "REVIEWER_GUIDE.md",
+    "EXECUTIVE_SUMMARY.md",
+    "VERIFY.md",
+    "CHALLENGE.md",
+    "PACKET_INPUTS.json",
+    "PACKET_MANIFEST.json",
+]
 
-def check_scenario(scenario: dict, verbose: bool) -> bool:
-    sid = scenario["id"]
-    expected_exit = scenario["expected_verification_exit_code"]
-    scenario_dir = GALLERY / sid
 
-    print(f"\n[{sid}]")
+def _check_pack_files(pack_dir: Path) -> list[str]:
+    return [f for f in REQUIRED_PACK_FILES if not (pack_dir / f).exists()]
 
-    # 1. Scenario directory must exist
-    if not scenario_dir.is_dir():
-        print(f"  FAIL: directory not found: {scenario_dir}")
-        return False
 
-    # 2. Pack path must exist
-    pack_subpath = SCENARIO_PACK_SUBPATH.get(sid, "proof_pack")
-    pack_dir = scenario_dir / pack_subpath
-    if not pack_dir.is_dir():
-        print(f"  FAIL: pack directory not found: {pack_dir}")
-        return False
-
-    # 3. Required pack files must exist
-    missing = [f for f in REQUIRED_PACK_FILES if not (pack_dir / f).exists()]
-    if missing:
-        print(f"  FAIL: missing pack files: {missing}")
-        return False
-
-    # 4. verify.sh must exist
-    if not (scenario_dir / "verify.sh").exists():
-        print(f"  FAIL: verify.sh not found")
-        return False
-
-    # 5. verify_transcript.md must be non-empty
-    transcript = pack_dir / "verify_transcript.md"
-    if transcript.stat().st_size == 0:
-        print(f"  FAIL: verify_transcript.md is empty")
-        return False
-
-    # 6. Run assay verify-pack and assert expected exit code
+def _check_verify_pack_contract(pack_dir: Path, sid: str, expected_exit: int, verbose: bool) -> bool:
     extra_flags = SCENARIO_VERIFY_FLAGS.get(sid, [])
     cmd = [ASSAY_CMD, "verify-pack", str(pack_dir)] + extra_flags
     if verbose:
@@ -99,13 +71,113 @@ def check_scenario(scenario: dict, verbose: bool) -> bool:
         if verbose and result.stdout.strip():
             print(f"      stdout: {result.stdout.strip()[:200]}")
         return True
-    else:
-        print(f"  FAIL  exit={actual_exit}  [expected {expected_exit}]")
+
+    print(f"  FAIL  exit={actual_exit}  [expected {expected_exit}]")
+    if result.stdout.strip():
+        print(f"      stdout: {result.stdout.strip()[:400]}")
+    if result.stderr.strip():
+        print(f"      stderr: {result.stderr.strip()[:200]}")
+    return False
+
+
+def _check_reviewer_packet_contract(scenario: dict, scenario_dir: Path, verbose: bool) -> bool:
+    sid = scenario["id"]
+    packet_dir = scenario_dir / scenario.get("primary_artifact_path", "reviewer_packet")
+    expected_exit = scenario["expected_verification_exit_code"]
+    expected_settlement = scenario.get("expected_reviewer_settlement")
+    expected_nested_exit = scenario.get("expected_nested_pack_exit_code")
+
+    if not packet_dir.is_dir():
+        print(f"  FAIL: reviewer packet directory not found: {packet_dir}")
+        return False
+
+    missing_packet_files = [f for f in REQUIRED_REVIEWER_PACKET_FILES if not (packet_dir / f).exists()]
+    if missing_packet_files:
+        print(f"  FAIL: missing reviewer packet files: {missing_packet_files}")
+        return False
+
+    nested_pack_dir = packet_dir / "proof_pack"
+    missing_pack_files = _check_pack_files(nested_pack_dir)
+    if missing_pack_files:
+        print(f"  FAIL: missing nested proof pack files: {missing_pack_files}")
+        return False
+
+    cmd = [ASSAY_CMD, "reviewer", "verify", str(packet_dir), "--json"]
+    if verbose:
+        print(f"  $ {' '.join(cmd)}")
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != expected_exit:
+        print(f"  FAIL: reviewer verify exit={result.returncode} [expected {expected_exit}]")
         if result.stdout.strip():
             print(f"      stdout: {result.stdout.strip()[:400]}")
         if result.stderr.strip():
             print(f"      stderr: {result.stderr.strip()[:200]}")
         return False
+
+    data = json.loads(result.stdout)
+    settlement = data.get("settlement_state")
+    if settlement != expected_settlement:
+        print(f"  FAIL: reviewer settlement={settlement} [expected {expected_settlement}]")
+        return False
+    if not data.get("packet_verified"):
+        print("  FAIL: reviewer packet did not verify")
+        return False
+    if not data.get("proof_pack", {}).get("verified"):
+        print("  FAIL: nested proof pack did not verify via reviewer verifier")
+        return False
+
+    print(f"  OK  reviewer settlement={settlement}  [expected {expected_settlement}]")
+
+    if expected_nested_exit is not None:
+        nested_ok = _check_verify_pack_contract(nested_pack_dir, sid, expected_nested_exit, verbose)
+        if not nested_ok:
+            return False
+
+    return True
+
+
+def check_scenario(scenario: dict, verbose: bool) -> bool:
+    sid = scenario["id"]
+    expected_exit = scenario["expected_verification_exit_code"]
+    scenario_dir = GALLERY / sid
+    verification_command = scenario.get("verification_command", "verify_pack")
+
+    print(f"\n[{sid}]")
+
+    # 1. Scenario directory must exist
+    if not scenario_dir.is_dir():
+        print(f"  FAIL: directory not found: {scenario_dir}")
+        return False
+
+    # 2. verify.sh must exist
+    if not (scenario_dir / "verify.sh").exists():
+        print(f"  FAIL: verify.sh not found")
+        return False
+
+    if verification_command == "reviewer_verify":
+        return _check_reviewer_packet_contract(scenario, scenario_dir, verbose)
+
+    # 3. Pack path must exist
+    pack_dir = scenario_dir / scenario.get("primary_artifact_path", "proof_pack")
+    if not pack_dir.is_dir():
+        print(f"  FAIL: pack directory not found: {pack_dir}")
+        return False
+
+    # 4. Required pack files must exist
+    missing = _check_pack_files(pack_dir)
+    if missing:
+        print(f"  FAIL: missing pack files: {missing}")
+        return False
+
+    # 5. verify_transcript.md must be non-empty
+    transcript = pack_dir / "verify_transcript.md"
+    if transcript.stat().st_size == 0:
+        print(f"  FAIL: verify_transcript.md is empty")
+        return False
+
+    # 6. Run assay verify-pack and assert expected exit code
+    return _check_verify_pack_contract(pack_dir, sid, expected_exit, verbose)
 
 
 def check_scenario_03_good(verbose: bool) -> bool:
