@@ -1,7 +1,7 @@
 {
   "source_repo": "Haserjian/assay-verify-ts",
-  "source_commit": "02cba1a215fc3f90797b2f2aca89a1297691e86a",
-  "bundle_sha256": "3ee8a200eec85abbec1dba194128e36ff1fa923312b7ab9c1cc2f5ee85a353f8",
-  "synced_at": "2026-03-28T09:10:54Z",
+  "source_commit": "8bdee97f95528e97369d00e87fd5f09eb8b384c3",
+  "bundle_sha256": "fad468aeb99ab84327481ee0722db72977eb0dd2dbb817fb60b99f6368ec4b0c",
+  "synced_at": "2026-03-29T16:36:44Z",
   "contract_version": "Assay JCS Profile v1"
 }
