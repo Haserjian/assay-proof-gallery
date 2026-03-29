@@ -1297,9 +1297,18 @@ async function verifyProofPack(fileIndex, manifestPath = 'pack_manifest.json') {
 
   const hashFailCount = result.errors.filter(e => e.code === 'E_MANIFEST_TAMPER').length;
 
+  // P1b: surface trust-boundary caveat — signature validity ≠ signer identity
+  const warnings = [];
+  if (integrity === 'pass') {
+    warnings.push(
+      'Signature valid for supplied key material; signer identity not pinned. ' +
+      'Use assay verify-pack --lock for trust-anchored verification.'
+    );
+  }
+
   return {
     artifact_type: 'proof_pack', integrity, claims, error: null, checks,
-    warnings: [], manifest, receipts,
+    warnings, manifest, receipts,
     sigResult: integrity === 'pass' ? true : (hasSigError ? false : null),
     hashFailCount, manifestPath,
   };
