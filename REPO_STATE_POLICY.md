@@ -45,7 +45,12 @@ creates files under repo scope that are not repo content. Rule:
 
 ## Branch protection note
 
-Direct pushes to `main` are currently succeeding via an override path while
-the remote states PR-only governance. Each such push is an **override
-publication event**, not normal promotion. The gap between stated policy and
-actual behavior is acknowledged open governance debt, not resolved policy.
+`main` is protected: the default rule requires changes to come through a PR.
+The repo owner holds a bypass actor exemption, so direct pushes are also
+allowed in current practice. This is a normal solo/bootstrap repo setup —
+two valid paths exist (PR and direct push), not a broken rule.
+
+**Current mode:** bootstrap — owner direct-push is intentional while the repo
+is single-contributor. If this becomes a shared or audited repo, removing the
+bypass exemption and enforcing the PR path exclusively is the right move at
+that point.
