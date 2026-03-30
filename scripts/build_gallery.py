@@ -97,6 +97,18 @@ SCENARIOS = {
         "expected_reviewer_settlement": "VERIFIED_WITH_GAPS",
         "expected_nested_pack_exit_code": 0,
     },
+    "07-contested-decision": {
+        "exit_code": 0,
+        "integrity": "PASS",
+        "claims": "PASS",
+        "also_has_tampered": True,
+        "description": "ProcureCo vendor evaluation AI -- before/after reconstruction specimen with tamper-fail reveal",
+        "scenario_class": "engineering_verification",
+        "primary_audience": ["buyer", "reviewer"],
+        "claim_class": "contested_decision",
+        "verification_command": "verify_pack",
+        "primary_artifact_path": "proof_pack",
+    },
 }
 
 
@@ -648,6 +660,187 @@ assay verify-pack ./reviewer_packet/proof_pack
     (scenario_dir / "verify.sh").chmod(0o755)
 
 
+def write_vendor_eval_agent(path: Path):
+    """Write a synthetic ProcureCo vendor evaluation agent script."""
+    path.write_text(
+        '''\
+"""
+Synthetic ProcureCo vendor evaluation agent.
+An AI evaluates three vendor proposals and recommends a winner.
+No real API calls -- all receipts are synthetic but schema-valid.
+"""
+from assay.store import emit_receipt
+
+# Model call: evaluate vendor proposals
+r1 = emit_receipt("model_call", {
+    "model_id": "claude-sonnet-4-20250514",
+    "provider": "anthropic",
+    "total_tokens": 3102,
+    "input_tokens": 2580,
+    "output_tokens": 522,
+    "latency_ms": 1847,
+    "task": "vendor_proposal_evaluation",
+})
+
+# Governance check: procurement policy gate
+emit_receipt("guardian_verdict", {
+    "verdict": "allow",
+    "tool": "procurement_policy_gate",
+    "policy_name": "vendor_scoring_rubric",
+    "policy_version": "v2.1",
+    "policy_digest": "sha256:a4f1c9e2d7b83056f1e9ca234d6781ab09ef3c7d",
+    "risk_score": 0.12,
+    "dignity_gate": "pass",
+    "rationale": "Evaluation within declared procurement scope, no PII in proposals",
+}, parent_receipt_id=r1["receipt_id"])
+
+# Capability use: write decision output
+emit_receipt("capability_use", {
+    "capability": "file_write",
+    "target": "/output/vendor_decision.json",
+    "authorized": True,
+}, parent_receipt_id=r1["receipt_id"])
+
+print("ProcureCo agent: 3 receipts emitted")
+'''
+    )
+
+
+def write_vendor_eval_runcard(path: Path):
+    """Write a run-card for vendor evaluation (3 receipts >= 2)."""
+    card = {
+        "card_id": "vendor_eval_coverage",
+        "name": "Vendor Evaluation Coverage Claim",
+        "description": "Vendor evaluation must have at least 2 receipts for decision audit coverage",
+        "claims": [
+            {
+                "claim_id": "minimum_receipt_coverage",
+                "description": "At least 2 receipts required for vendor decision audit",
+                "check": "receipt_count_ge",
+                "params": {"min_count": 2},
+            }
+        ],
+    }
+    path.write_text(json.dumps(card, indent=2))
+
+
+def write_contested_verify_sh(scenario_dir: Path):
+    """Write verify.sh that checks both good pack (exit 0) and tampered pack (exit 2)."""
+    script = """\
+#!/usr/bin/env bash
+# Verify the contested-decision specimen: good pack should PASS, tampered should FAIL.
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+python3 -m pip install assay-ai -q
+cd "$SCRIPT_DIR"
+
+echo ""
+echo "=== Verifying signed evidence packet (authentic) ==="
+echo ""
+set +e
+assay verify-pack ./proof_pack
+GOOD_EXIT=$?
+set -e
+
+echo ""
+echo "=== Verifying tampered packet (one byte changed) ==="
+echo ""
+set +e
+assay verify-pack ./tampered_pack
+BAD_EXIT=$?
+set -e
+
+echo ""
+PASS=true
+if [ $GOOD_EXIT -eq 0 ]; then
+  echo "✓ Authentic pack: exit 0 (PASS) — evidence is intact"
+else
+  echo "✗ Authentic pack: unexpected exit $GOOD_EXIT (expected 0)"
+  PASS=false
+fi
+
+if [ $BAD_EXIT -eq 2 ]; then
+  echo "✓ Tampered pack: exit 2 (TAMPERED) — alteration detected"
+else
+  echo "✗ Tampered pack: unexpected exit $BAD_EXIT (expected 2)"
+  PASS=false
+fi
+
+echo ""
+if [ "$PASS" = true ]; then
+  echo "Specimen verified: authentic evidence passes, tampered evidence fails."
+  exit 0
+else
+  echo "Specimen verification FAILED."
+  exit 1
+fi
+"""
+    (scenario_dir / "verify.sh").write_text(script)
+    (scenario_dir / "verify.sh").chmod(0o755)
+
+
+def build_scenario_07(scenario_dir: Path):
+    """Scenario 07: Contested decision — before/after reconstruction specimen."""
+    print("\n[07] Building Contested Decision specimen...")
+    pack_dir = scenario_dir / "proof_pack"
+    tampered_dir = scenario_dir / "tampered_pack"
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        agent_script = tmp_path / "vendor_eval_agent.py"
+        run_card = tmp_path / "vendor_eval_claim.json"
+        temp_pack_dir = tmp_path / "proof_pack"
+        write_vendor_eval_agent(agent_script)
+        write_vendor_eval_runcard(run_card)
+
+        result = run(
+            [ASSAY_CMD, "run", "-c", str(run_card), "-o", str(temp_pack_dir), "--", "python3", str(agent_script)],
+            check=False,
+            capture=True,
+        )
+        print(result.stdout)
+        if result.stderr:
+            print(result.stderr, file=sys.stderr)
+
+        if temp_pack_dir.is_dir():
+            if pack_dir.exists():
+                shutil.rmtree(pack_dir)
+            shutil.copytree(temp_pack_dir, pack_dir)
+
+    # Verify good pack
+    verify = run(
+        [ASSAY_CMD, "verify-pack", str(pack_dir), "--json"],
+        check=False,
+        capture=True,
+    )
+    result_data = json.loads(verify.stdout) if verify.stdout.strip().startswith("{") else {}
+    print(f"  good exit={verify.returncode}  integrity={result_data.get('receipt_integrity', '?')}  claims={result_data.get('claim_check', '?')}")
+
+    # Build tampered pack (copy + flip one byte in receipt_pack.jsonl)
+    if tampered_dir.exists():
+        shutil.rmtree(tampered_dir)
+    shutil.copytree(pack_dir, tampered_dir)
+
+    receipt_file = tampered_dir / "receipt_pack.jsonl"
+    data = receipt_file.read_bytes()
+    # Flip a byte in the middle of the content (past the header, in actual receipt data)
+    flip_pos = min(200, len(data) - 1)
+    tampered_data = data[:flip_pos] + bytes([data[flip_pos] ^ 0x01]) + data[flip_pos + 1:]
+    receipt_file.write_bytes(tampered_data)
+
+    # Verify tampered pack
+    bad_verify = run(
+        [ASSAY_CMD, "verify-pack", str(tampered_dir)],
+        check=False,
+        capture=True,
+    )
+    print(f"  tampered exit={bad_verify.returncode}")
+
+    normalize_pack_summary(pack_dir, "gallery/07-contested-decision/proof_pack")
+
+    return verify.returncode
+
+
 def update_scenarios_json(results: dict):
     """Update scenarios.json with build results."""
     out = Path(__file__).parent.parent / "scenarios.json"
@@ -692,7 +885,7 @@ def main():
             if d.exists():
                 shutil.rmtree(d)
                 print(f"Cleaned {d}")
-            for sub in ["good", "tampered"]:
+            for sub in ["good", "tampered", "tampered_pack"]:
                 d2 = GALLERY_ROOT / s / sub
                 if d2.exists():
                     shutil.rmtree(d2)
@@ -728,6 +921,9 @@ def main():
         elif scenario_id == "06-naic-aiset-mapping":
             exit_code = build_reviewer_packet_scenario(scenario_id, scenario_dir)
             write_reviewer_verify_sh(scenario_dir, "VERIFIED_WITH_GAPS")
+        elif scenario_id == "07-contested-decision":
+            exit_code = build_scenario_07(scenario_dir)
+            write_contested_verify_sh(scenario_dir)
 
         results[scenario_id] = {
             "built": True,

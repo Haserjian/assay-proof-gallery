@@ -113,6 +113,25 @@
       "expected_nested_pack_exit_code": 0,
       "built": true,
       "actual_exit_code": 0
+    },
+    {
+      "id": "07-contested-decision",
+      "description": "ProcureCo vendor evaluation AI -- before/after reconstruction specimen with tamper-fail reveal",
+      "scenario_class": "engineering_verification",
+      "primary_audience": [
+        "buyer",
+        "reviewer"
+      ],
+      "claim_class": "contested_decision",
+      "verification_command": "verify_pack",
+      "primary_artifact_path": "proof_pack",
+      "expected_verification_exit_code": 0,
+      "expected_integrity": "PASS",
+      "expected_claims": "PASS",
+      "expected_reviewer_settlement": null,
+      "expected_nested_pack_exit_code": null,
+      "built": true,
+      "actual_exit_code": 0
     }
   ]
 }
