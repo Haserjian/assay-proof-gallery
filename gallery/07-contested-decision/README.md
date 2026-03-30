@@ -101,6 +101,13 @@ Or run the bundled script:
 bash verify.sh
 ```
 
+> **Note on signer-not-pinned warning:** Demo packs show a
+> `Signature valid for supplied key material; signer identity not pinned`
+> advisory. This means the signature is cryptographically valid but the
+> verifier has not been told to trust only one specific key. In production,
+> use `assay lock init` to pin the signer identity — pinned verification
+> removes the advisory and adds explicit key-trust enforcement.
+
 ## Files in this scenario
 
 ```
