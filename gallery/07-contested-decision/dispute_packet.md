@@ -175,10 +175,17 @@ authenticated.
 
 ## Trust boundary
 
+| Role (RATS) | In this scenario |
+|---|---|
+| **Attester** | The instrumented evaluation system (`assay-local` signer) |
+| **Verifier** | `assay verify-pack` CLI or browser verifier |
+| **Relying Party** | The disputing vendor, auditor, or reviewer |
+
 | | |
 |---|---|
 | **Signed by** | `assay-local` (operator-held key) |
-| **Trust assumption** | Signer faithfully recorded the episode at execution time |
+| **Trust assumption** | Attester faithfully recorded the episode at execution time |
+| **Topology** | Passport Model — the signed packet travels with the decision |
 | **Not covered unless separately authenticated** | Upstream documents, real-world facts, input authenticity |
 
 ---
