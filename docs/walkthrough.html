@@ -379,11 +379,11 @@
     </p>
     <div class="cta-block">
       <p class="cta-label">
-        Verify a real sample artifact in your browser. No install. Nothing uploaded.
+        Verify a real sample proof pack in your browser. No install. Nothing uploaded.
       </p>
       <a class="cta" href="verify.html">Open verifier</a>
       <p class="cta-note">
-        Click "REVIEWER PACKET", "PASS", "HONEST FAIL", or "TAMPERED" to load a sample and see the verdict instantly.
+        Click "PASS", "HONEST FAIL", or "TAMPERED" to load a sample and see the verdict instantly. Reviewer packets remain CLI-only.
       </p>
     </div>
   </div>
@@ -400,9 +400,9 @@
 
     <div class="scenario-grid">
 
-      <a class="sc-card" href="verify.html?sample=reviewer-packet">
-        <div class="sc-card-label mcp">Reviewer packet</div>
-        <div class="sc-card-body">Buyer-facing packet on top of a signed proof pack. Nested proof passes, packet settlement stays `VERIFIED_WITH_GAPS` because coverage is partial.</div>
+      <a class="sc-card" href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/05-reviewer-packet-gaps/reviewer_packet">
+        <div class="sc-card-label mcp">Reviewer packet (CLI)</div>
+        <div class="sc-card-body">Buyer-facing packet on top of a signed proof pack. Browser verification is intentionally proof-pack only; verify this layer with `assay reviewer verify`.</div>
       </a>
 
       <a class="sc-card sc-pass" href="verify.html?sample=pass">

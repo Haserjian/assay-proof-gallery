@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Assay Packet Verifier</title>
-<meta name="description" content="Verify Assay proof packs and reviewer packets in your browser. Client-side verification. Nothing uploaded.">
-<meta property="og:title" content="Assay Packet Verifier">
-<meta property="og:description" content="Verify Assay proof packs and reviewer packets in your browser. Client-side verification. Nothing uploaded.">
+<title>Assay Proof Pack Verifier</title>
+<meta name="description" content="Verify Assay proof packs in your browser. Client-side verification. Nothing uploaded. Reviewer packets currently require CLI verification.">
+<meta property="og:title" content="Assay Proof Pack Verifier">
+<meta property="og:description" content="Verify Assay proof packs in your browser. Client-side verification. Nothing uploaded. Reviewer packets currently require CLI verification.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Assay Packet Verifier">
-<meta name="twitter:description" content="Verify Assay proof packs and reviewer packets in your browser. Client-side verification. Nothing uploaded.">
+<meta name="twitter:title" content="Assay Proof Pack Verifier">
+<meta name="twitter:description" content="Verify Assay proof packs in your browser. Client-side verification. Nothing uploaded. Reviewer packets currently require CLI verification.">
 <style>
 :root {
   --bg: #0d1117;
@@ -507,16 +507,16 @@ body {
 
   <!-- ── Header ── -->
   <header class="header">
-    <h1>Assay Packet Verifier</h1>
-    <p class="subtitle">Verify an Assay proof pack or reviewer packet in your browser. Check integrity (signature + hashes), freshness, and claim status. Nothing is uploaded.</p>
+    <h1>Assay Proof Pack Verifier</h1>
+    <p class="subtitle">Verify an Assay proof pack in your browser. Check integrity, signature validity, freshness, and claim status. Reviewer packets currently require <code>assay reviewer verify</code>. Nothing is uploaded.</p>
     <span class="trust-badge">Signed manifests &middot; file fingerprints &middot; deterministic canonicalization</span>
   </header>
 
   <!-- ── Drop zone ── -->
   <div class="drop-area">
     <div class="drop-zone" id="dropZone">
-      <div class="drop-zone-title">Drop a reviewer packet or proof pack here</div>
-      <div class="drop-zone-hint">Folder or individual files accepted</div>
+      <div class="drop-zone-title">Drop a proof pack here</div>
+      <div class="drop-zone-hint">Folder or individual files accepted. Reviewer packets are CLI-only.</div>
     </div>
     <div class="file-buttons">
       <label class="file-btn">Select folder<input type="file" id="folderInput" webkitdirectory class="file-inputs-hidden"></label>
@@ -525,7 +525,6 @@ body {
     <div class="sample-strip" id="sampleHint">
       <div class="sample-strip-label">No artifact? Try a sample:</div>
       <div class="sample-buttons">
-        <button class="sample-btn s-reviewer" onclick="loadSample('reviewer-packet')">REVIEWER PACKET</button>
         <button class="sample-btn s-pass" onclick="loadSample('pass')">PASS</button>
         <button class="sample-btn s-honest-fail" onclick="loadSample('honest-fail')">HONEST FAIL</button>
         <button class="sample-btn s-tampered" onclick="loadSample('tampered')">TAMPERED</button>
@@ -749,10 +748,11 @@ function resolveManifestFile(index, manifestPath) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// GALLERY-LOCAL (non-canonical)
+// GALLERY-LOCAL (non-canonical, retained reference)
 // The functions below are NOT powered by the canonical assay-verify-ts
-// verifier. They provide reviewer-packet verification as a gallery-local
-// feature until assay-verify-ts adds reviewer-packet support.
+// verifier. They are retained as reference logic only; the public browser
+// surface now fails closed for reviewer packets until assay-verify-ts adds
+// canonical reviewer-packet support.
 // See: https://github.com/Haserjian/assay-proof-gallery/issues/1
 // ══════════════════════════════════════════════════════════════════════════
 
@@ -1579,9 +1579,20 @@ async function verifyReviewerPacket(fileIndex) {
   }
 }
 
+function reviewerPacketBrowserUnsupportedResult() {
+  return {
+    artifact_type: 'unsupported',
+    error: 'Browser verification currently supports signed proof packs only. Reviewer packets remain CLI-only. Run `assay reviewer verify <reviewer_packet_dir>` for packet settlement, or upload the nested `proof_pack/` folder here for canonical browser verification.',
+    checks: [],
+    warnings: [],
+    manifest: null,
+    receipts: [],
+  };
+}
+
 async function verifyAnyArtifact(fileIndex) {
   const isReviewerPacket = REVIEWER_REQUIRED_FILES.every(fileName => hasFile(fileIndex, fileName));
-  if (isReviewerPacket) return await verifyReviewerPacket(fileIndex);
+  if (isReviewerPacket) return reviewerPacketBrowserUnsupportedResult();
   const proofPackResult = await verifyProofPack(fileIndex);
   proofPackResult.command = 'verify-pack';
   proofPackResult.status = proofPackResult.error ? 'error' : (proofPackResult.integrity === 'pass' ? 'ok' : 'failed');
@@ -2010,15 +2021,16 @@ function copySummary() {
   else verdictText = 'PASS';
 
   let integrityLine = 'Unknown';
-  if (res.integrity === 'tampered') integrityLine = `${res.hashFailCount || 1} hash mismatch(es) detected`;
+  if (res.error) integrityLine = res.error;
+  else if (res.integrity === 'tampered') integrityLine = `${res.hashFailCount || 1} hash mismatch(es) detected`;
   else if (res.integrity === 'sig_invalid') integrityLine = 'Hashes match, Ed25519 invalid';
   else if (res.integrity === 'hash_only') integrityLine = 'All hashes match, Ed25519 not supported in browser';
   else integrityLine = 'All hashes match, Ed25519 signature valid';
 
-  const claimsLine = res.claims === 'fail' ? 'FAIL' : res.claims === 'pass' ? 'PASS' : 'N/A';
+  const claimsLine = res.error ? 'N/A' : (res.claims === 'fail' ? 'FAIL' : res.claims === 'pass' ? 'PASS' : 'N/A');
   const signerLine = m.signer_id
     ? `${m.signer_id} (${(m.signer_pubkey_sha256 || '').slice(0, 8)}\u2026)`
-    : 'unknown';
+    : (res.error ? 'N/A' : 'unknown');
 
   const sep = '\u2500'.repeat(33);
   const now = new Date().toISOString();

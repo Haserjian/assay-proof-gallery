@@ -552,15 +552,14 @@
   <div class="section" style="margin-bottom: 2rem;">
     <div class="try-block">
       <p class="try-block-label">
-        Verify a real sample artifact in your browser. No install. Nothing uploaded.
+        Verify a real sample proof pack in your browser. No install. Nothing uploaded.
       </p>
       <div class="try-buttons">
-        <a class="try-btn t-reviewer" href="verify.html?sample=reviewer-packet">REVIEWER PACKET</a>
         <a class="try-btn t-pass" href="verify.html?sample=pass">PASS</a>
         <a class="try-btn t-honest-fail" href="verify.html?sample=honest-fail">HONEST FAIL</a>
         <a class="try-btn t-tampered" href="verify.html?sample=tampered">TAMPERED</a>
       </div>
-      <p class="try-note">Client-side verification. Proof packs prove integrity; reviewer packets add settlement context. These are different layers, not the same contract.</p>
+      <p class="try-note">Client-side browser verification covers signed proof packs only. Reviewer packets remain CLI-only via <code>assay reviewer verify</code>.</p>
     </div>
   </div>
 
@@ -761,12 +760,12 @@ assay verify-pack ./gallery/03-tamper-demo/tampered   # exit 2</div>
           <span class="outcome-badge packet-review">VERIFIED WITH GAPS</span>
         </div>
         <div class="sc-desc">
-          A buyer-facing reviewer packet wrapped around a signed proof pack. The nested proof verifies cleanly, but one workflow boundary remains partial.
+          A buyer-facing reviewer packet wrapped around a signed proof pack. The nested proof verifies cleanly, but packet settlement remains a separate review layer verified via CLI.
           <strong>This is the handoff artifact a buyer can forward and challenge.</strong>
         </div>
         <div class="sc-links">
-          <a href="verify.html?sample=reviewer-packet">Verify in browser</a>
           <a href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/05-reviewer-packet-gaps/reviewer_packet">View packet</a>
+          <a href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/05-reviewer-packet-gaps/reviewer_packet/proof_pack">View nested proof pack</a>
           <a href="https://github.com/Haserjian/assay-proof-gallery/blob/main/gallery/05-reviewer-packet-gaps/QA_CHECKLIST.md">QA checklist</a>
         </div>
         <details class="sc-secondary">
