@@ -1920,12 +1920,23 @@ function renderResult(res) {
   // Pack identity
   const metaGrid = document.getElementById('metaGrid');
   metaGrid.innerHTML = '';
+  // Use live verification result for integrity/claims, not stale attestation values.
+  // The attestation records what was true at signing time; after tampering those
+  // fields are misleading. The verdict card already shows the correct state, so
+  // the identity grid must agree.
+  const liveIntegrity = res.integrity === 'tampered' ? 'FAIL'
+    : res.integrity === 'sig_invalid' ? 'FAIL'
+    : att.receipt_integrity;
+  const liveClaims = res.integrity === 'tampered' ? 'N/A'
+    : res.claims === 'fail' ? 'FAIL'
+    : att.claim_check;
+
   const fields = [
     ['Pack ID',     m.pack_id],
     ['Signer',      m.signer_id ? `${m.signer_id}${signerFp}` : null],
     ['Receipts',    att.n_receipts],
-    ['Integrity',   att.receipt_integrity],
-    ['Claims',      att.claim_check],
+    ['Integrity',   liveIntegrity],
+    ['Claims',      liveClaims],
     ['Time range',  att.timestamp_start ? `${fmtTimestamp(att.timestamp_start)} \u2013 ${fmtTimestamp(att.timestamp_end)}` : null],
     ['Fingerprint', m.pack_root_sha256 ? m.pack_root_sha256.slice(0, 32) + '\u2026' : null],
   ];
