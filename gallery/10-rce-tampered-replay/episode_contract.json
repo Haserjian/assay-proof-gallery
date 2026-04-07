@@ -1,0 +1,61 @@
+{
+  "schema_version": "rce/0.1",
+  "episode_id": "ep_019d07dfe648e3636b986339",
+  "objective": "Analyze input and emit structured claim",
+  "inputs": [
+    {
+      "ref": "input.json",
+      "hash": "sha256:6deddbd133af1cec1d068a93ad3d95ba6e571c68cd31e6403cc39b0af596b046",
+      "media_type": "application/json"
+    }
+  ],
+  "replay_script": {
+    "schema_version": "replay_script/0.1",
+    "steps": [
+      {
+        "step_id": "s01",
+        "opcode": "LOAD_INPUT",
+        "params": {
+          "ref": "input.json"
+        },
+        "depends_on": []
+      },
+      {
+        "step_id": "s02",
+        "opcode": "APPLY_TRANSFORM",
+        "params": {
+          "transform": "analyze"
+        },
+        "depends_on": [
+          "s01"
+        ]
+      },
+      {
+        "step_id": "s03",
+        "opcode": "EMIT_OUTPUT",
+        "params": {
+          "claim_type": "analysis",
+          "output_ref": "s02"
+        },
+        "depends_on": [
+          "s02"
+        ]
+      }
+    ]
+  },
+  "replay_policy": {
+    "replay_basis": "recorded_trace",
+    "comparator_tier": "A"
+  },
+  "environment": {
+    "provider": "synthetic",
+    "model_id": "golden-path-v0",
+    "tool_versions": {
+      "assay": "1.15.1"
+    },
+    "container_digest": null,
+    "env_fingerprint_hash": "sha256:a80c461d1dc1cbda0da21f5a11d1eab1435787af15a58f63a203f6531f33943a",
+    "model_version_hint": null,
+    "system_fingerprint": null
+  }
+}

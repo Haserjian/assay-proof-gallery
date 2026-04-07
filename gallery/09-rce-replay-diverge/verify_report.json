@@ -1,0 +1,11 @@
+{
+  "pack_id": "pack_20260407T002143_df75e567",
+  "run_id": "trace_rce_gallery",
+  "passed": true,
+  "errors": [],
+  "warnings": [],
+  "receipt_count": 5,
+  "head_hash": "b1b23d389f511d417b5a29d131dba07b9910b9e9a87b5f6a65012d1190d1f03a",
+  "verified_at": "2026-04-07T00:21:43.309895+00:00",
+  "verifier_version": "1.20.2"
+}

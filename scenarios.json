@@ -132,6 +132,54 @@
       "expected_nested_pack_exit_code": null,
       "built": true,
       "actual_exit_code": 0
+    },
+    {
+      "id": "08-rce-replay-match",
+      "description": "RCE episode replay -- all recorded traces match receipt hashes (Tier A)",
+      "scenario_class": "rce_replay",
+      "primary_audience": ["engineer", "security"],
+      "claim_class": "rce_replay_match",
+      "verification_command": "rce-verify",
+      "primary_artifact_path": ".",
+      "expected_verification_exit_code": 0,
+      "expected_integrity": "PASS",
+      "expected_claims": "PASS",
+      "expected_reviewer_settlement": null,
+      "expected_nested_pack_exit_code": null,
+      "built": true,
+      "actual_exit_code": 0
+    },
+    {
+      "id": "09-rce-replay-diverge",
+      "description": "RCE episode replay -- recorded traces differ from receipts (honest divergence)",
+      "scenario_class": "rce_replay",
+      "primary_audience": ["engineer", "security"],
+      "claim_class": "rce_replay_diverge",
+      "verification_command": "rce-verify",
+      "primary_artifact_path": ".",
+      "expected_verification_exit_code": 1,
+      "expected_integrity": "PASS",
+      "expected_claims": "FAIL",
+      "expected_reviewer_settlement": null,
+      "expected_nested_pack_exit_code": null,
+      "built": true,
+      "actual_exit_code": 1
+    },
+    {
+      "id": "10-rce-tampered-replay",
+      "description": "RCE episode replay -- tampered receipt detected before replay comparison",
+      "scenario_class": "rce_replay",
+      "primary_audience": ["engineer", "security"],
+      "claim_class": "rce_integrity_fail",
+      "verification_command": "rce-verify",
+      "primary_artifact_path": ".",
+      "expected_verification_exit_code": 2,
+      "expected_integrity": "FAIL",
+      "expected_claims": null,
+      "expected_reviewer_settlement": null,
+      "expected_nested_pack_exit_code": null,
+      "built": true,
+      "actual_exit_code": 2
     }
   ]
 }
