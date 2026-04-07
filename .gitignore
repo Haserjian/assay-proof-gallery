@@ -5,3 +5,4 @@ site/
 *.egg-info/
 receipts/
 .assay/
+scripts/.gallery_keys/
