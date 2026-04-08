@@ -89,6 +89,41 @@ jobs:
             echo "WARNING: verifier bundle is $DAYS_AGO days old. Consider running scripts/sync-verifier.sh"
           fi
 
+      - name: Set up Node.js for bundle source-rebuild gate
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify bundle reproduces from pinned source
+        run: |
+          set -euo pipefail
+          PIN=$(python3 -c "import json; print(json.load(open('docs/VERIFIER_PROVENANCE.json'))['source_commit'])")
+          SOURCE_REPO=$(python3 -c "import json; print(json.load(open('docs/VERIFIER_PROVENANCE.json'))['source_repo'])")
+          echo "Rebuilding ${SOURCE_REPO} at ${PIN}"
+
+          REBUILD_DIR=/tmp/verify-ts-rebuild
+          rm -rf "$REBUILD_DIR"
+          git clone "https://github.com/${SOURCE_REPO}.git" "$REBUILD_DIR"
+          git -C "$REBUILD_DIR" checkout "$PIN"
+          (cd "$REBUILD_DIR" && npm ci && npm run build:browser)
+
+          REBUILT_SHA=$(sha256sum "$REBUILD_DIR/browser/assay-verify.js" | cut -d' ' -f1)
+          CHECKED_IN_SHA=$(sha256sum docs/assay-verify.js | cut -d' ' -f1)
+
+          if [ "$REBUILT_SHA" != "$CHECKED_IN_SHA" ]; then
+            echo "ERROR: bundle does not reproduce from pinned source ${PIN}"
+            echo "  Rebuilt:    ${REBUILT_SHA}"
+            echo "  Checked in: ${CHECKED_IN_SHA}"
+            echo "First differing bytes (cmp -l, max 20 lines):"
+            cmp -l "$REBUILD_DIR/browser/assay-verify.js" docs/assay-verify.js | head -20 || true
+            echo ""
+            echo "If this drift is intentional, run scripts/sync-verifier.sh against a verify-ts"
+            echo "checkout at the new commit, commit the updated bundle and provenance, and re-run CI."
+            exit 1
+          fi
+          echo "OK: bundle byte-reproduces from pinned source ${PIN}"
+          echo "  sha256: ${REBUILT_SHA}"
+
       - name: Assert no inline verifyPack function remains
         run: |
           if grep -q 'function verifyPack' docs/verify.html; then
