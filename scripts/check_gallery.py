@@ -120,14 +120,36 @@ def _check_reviewer_packet_contract(scenario: dict, scenario_dir: Path, verbose:
     if settlement != expected_settlement:
         print(f"  FAIL: reviewer settlement={settlement} [expected {expected_settlement}]")
         return False
-    if not data.get("packet_verified"):
-        print("  FAIL: reviewer packet did not verify")
-        return False
-    if not data.get("proof_pack", {}).get("verified"):
-        print("  FAIL: nested proof pack did not verify via reviewer verifier")
-        return False
 
-    print(f"  OK  reviewer settlement={settlement}  [expected {expected_settlement}]")
+    # VERIFIED_WITH_GAPS is an honest "useful-but-incomplete" verification
+    # state, NOT a clean pass. Under published assay-ai >=1.22.0, reviewer
+    # verify on a VERIFIED_WITH_GAPS packet returns exit 2 with
+    # packet_verified=false; that is the documented state, not a regression.
+    # The gallery contract surfaces it honestly via expected_settlement and
+    # expected_verification_exit_code=2 rather than collapsing it into PASS.
+    # We still require integrity_state=PASS so a gaps verdict is anchored on
+    # genuine integrity (not silent corruption), and the nested proof-pack
+    # check at the bottom of this function exercises the actual integrity
+    # path via `assay verify-pack` on the inner pack.
+    if expected_settlement == "VERIFIED_WITH_GAPS":
+        integrity = data.get("integrity_state")
+        if integrity != "PASS":
+            print(
+                f"  FAIL: reviewer integrity_state={integrity} [expected PASS even with gaps]"
+            )
+            return False
+        print(
+            f"  OK  reviewer settlement={settlement}  integrity={integrity}  "
+            f"[expected {expected_settlement}; gaps accepted as honest verdict, not clean PASS]"
+        )
+    else:
+        if not data.get("packet_verified"):
+            print("  FAIL: reviewer packet did not verify")
+            return False
+        if not data.get("proof_pack", {}).get("verified"):
+            print("  FAIL: nested proof pack did not verify via reviewer verifier")
+            return False
+        print(f"  OK  reviewer settlement={settlement}  [expected {expected_settlement}]")
 
     if expected_nested_exit is not None:
         nested_ok = _check_verify_pack_contract(nested_pack_dir, sid, expected_nested_exit, verbose)
