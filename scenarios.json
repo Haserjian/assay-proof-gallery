@@ -87,13 +87,13 @@
       "claim_class": "reviewer_packet",
       "verification_command": "reviewer_verify",
       "primary_artifact_path": "reviewer_packet",
-      "expected_verification_exit_code": 0,
+      "expected_verification_exit_code": 2,
       "expected_integrity": "PASS",
       "expected_claims": "PASS",
       "expected_reviewer_settlement": "VERIFIED_WITH_GAPS",
       "expected_nested_pack_exit_code": 0,
       "built": true,
-      "actual_exit_code": 0
+      "actual_exit_code": 2
     },
     {
       "id": "06-naic-aiset-mapping",
@@ -106,13 +106,13 @@
       "claim_class": "naic_aiset_mapping",
       "verification_command": "reviewer_verify",
       "primary_artifact_path": "reviewer_packet",
-      "expected_verification_exit_code": 0,
+      "expected_verification_exit_code": 2,
       "expected_integrity": "PASS",
       "expected_claims": "PASS",
       "expected_reviewer_settlement": "VERIFIED_WITH_GAPS",
       "expected_nested_pack_exit_code": 0,
       "built": true,
-      "actual_exit_code": 0
+      "actual_exit_code": 2
     },
     {
       "id": "07-contested-decision",

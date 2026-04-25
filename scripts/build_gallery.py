@@ -71,8 +71,14 @@ SCENARIOS = {
         "verification_command": "verify_pack",
         "primary_artifact_path": "proof_pack",
     },
+    # NOTE: exit_code=2 reflects assay-ai >=1.22.0 reviewer-verify behavior on
+    # VERIFIED_WITH_GAPS packets: useful-but-incomplete, integrity PASS, but
+    # not a clean verified state. The gallery contract surfaces this honestly
+    # rather than collapsing it into a PASS. Mirrors the same value in
+    # scenarios.json + the corresponding gaps branch in
+    # scripts/check_gallery.py::_check_reviewer_packet_contract.
     "05-reviewer-packet-gaps": {
-        "exit_code": 0,
+        "exit_code": 2,
         "integrity": "PASS",
         "claims": "PASS",
         "description": "AcmeSaaS support workflow reviewer packet -- authentic packet with explicit coverage gaps",
@@ -85,7 +91,7 @@ SCENARIOS = {
         "expected_nested_pack_exit_code": 0,
     },
     "06-naic-aiset-mapping": {
-        "exit_code": 0,
+        "exit_code": 2,
         "integrity": "PASS",
         "claims": "PASS",
         "description": "NAIC AISET reviewer packet -- insurance control mapping backed by proof-pack evidence",
