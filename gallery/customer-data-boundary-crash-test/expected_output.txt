@@ -1,0 +1,29 @@
+================================================================
+./verify.sh authentic    (expected exit code: 0)
+================================================================
+crash test: authentic
+
+[1/4] packet root: PASS
+[2/4] receipt lineage: PASS
+[3/4] v2 source bindings: PASS
+[4/4] observed boundary claim: PASS
+      boundary 'support_agent.customer_account_data.v1', 3 tool calls in scope
+
+OVERALL: PASS
+
+================================================================
+./verify.sh tampered     (expected exit code: 1)
+================================================================
+crash test: tampered
+
+[1/4] packet root: FAIL
+      `assay verify-pack` exited 2 — v1 5-file kernel detected mismatch
+[2/4] receipt lineage: PASS
+[3/4] FAIL v2 source binding mismatch
+    source_index: 3
+    expected: 3277950d28710a0c7cf0f59cb5012c649dffd7081b32d93187818d280be49881
+    actual:   7a244f6abcf3cff4d43847056bbdd89f45afec74826afb98b1bcc3edfe5ff87b
+[4/4] observed boundary claim: FAIL
+      mcp_tool_call r_tool_call_002 accessed forbidden data class 'customer_payment_method' (boundary 'support_agent.customer_account_data.v1')
+
+OVERALL: FAIL

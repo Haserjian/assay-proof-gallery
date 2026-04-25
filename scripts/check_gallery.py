@@ -159,6 +159,77 @@ def _check_reviewer_packet_contract(scenario: dict, scenario_dir: Path, verbose:
     return True
 
 
+def _check_crash_test_contract(scenario: dict, scenario_dir: Path, verbose: bool) -> bool:
+    """Validate a static-fixture crash-test scenario.
+
+    Runs the scenario's ``verify.sh`` twice — once on ``authentic``, once on
+    ``tampered`` — and asserts both exit codes match the contract. For the
+    tampered run, also asserts the output contains a set of required
+    substrings (e.g. ``source_index``, ``expected``, ``actual``) so the
+    visible diagnostic stays stable.
+
+    Contract block in ``scenarios.json``::
+
+        "crash_test": {
+            "authentic_exit": 0,
+            "tampered_exit": 1,
+            "tampered_required_substrings": ["source_index", "expected", "actual"]
+        }
+    """
+    spec = scenario.get("crash_test") or {}
+    authentic_exit = int(spec.get("authentic_exit", 0))
+    tampered_exit = int(spec.get("tampered_exit", 1))
+    required_substrings: list[str] = list(spec.get("tampered_required_substrings", []))
+
+    verify_sh = scenario_dir / "verify.sh"
+    if not verify_sh.exists():
+        print(f"  FAIL: verify.sh not found")
+        return False
+
+    # 1. authentic
+    cmd = ["bash", str(verify_sh), "authentic"]
+    if verbose:
+        print(f"  $ {' '.join(cmd)}")
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode != authentic_exit:
+        print(f"  FAIL: verify.sh authentic exit={res.returncode} [expected {authentic_exit}]")
+        if res.stdout.strip():
+            print(f"      stdout: {res.stdout.strip()[:400]}")
+        if res.stderr.strip():
+            print(f"      stderr: {res.stderr.strip()[:200]}")
+        return False
+    print(f"  OK  verify.sh authentic exit={res.returncode}  [expected {authentic_exit}]")
+
+    # 2. tampered
+    cmd = ["bash", str(verify_sh), "tampered"]
+    if verbose:
+        print(f"  $ {' '.join(cmd)}")
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode != tampered_exit:
+        print(f"  FAIL: verify.sh tampered exit={res.returncode} [expected {tampered_exit}]")
+        if res.stdout.strip():
+            print(f"      stdout: {res.stdout.strip()[:400]}")
+        if res.stderr.strip():
+            print(f"      stderr: {res.stderr.strip()[:200]}")
+        return False
+
+    # 3. tampered output diagnostic must be stable
+    out = res.stdout
+    missing = [s for s in required_substrings if s not in out]
+    if missing:
+        print(f"  FAIL: verify.sh tampered output missing required substrings: {missing}")
+        if out.strip():
+            print(f"      stdout: {out.strip()[:400]}")
+        return False
+    print(
+        f"  OK  verify.sh tampered exit={res.returncode}  "
+        f"[expected {tampered_exit}; binding mismatch shown: "
+        + ", ".join(required_substrings)
+        + "]"
+    )
+    return True
+
+
 def check_scenario(scenario: dict, verbose: bool) -> bool:
     sid = scenario["id"]
     expected_exit = scenario["expected_verification_exit_code"]
@@ -179,6 +250,9 @@ def check_scenario(scenario: dict, verbose: bool) -> bool:
 
     if verification_command == "reviewer_verify":
         return _check_reviewer_packet_contract(scenario, scenario_dir, verbose)
+
+    if verification_command == "crash_test":
+        return _check_crash_test_contract(scenario, scenario_dir, verbose)
 
     # 3. Pack path must exist
     pack_dir = scenario_dir / scenario.get("primary_artifact_path", "proof_pack")
