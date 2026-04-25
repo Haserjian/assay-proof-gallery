@@ -661,7 +661,7 @@
   <div class="section">
     <div class="section-label">Example scenarios</div>
     <p class="prose" style="margin-bottom: 1rem;">
-      Six public artifacts from the real toolchain: three proof-pack verdicts, one reviewer packet, one insurance vertical mapping, and one MCP proxy scenario.
+      Seven public artifacts from the real toolchain: three proof-pack verdicts, one reviewer packet, one insurance vertical mapping, one MCP proxy scenario, and one customer-data-boundary tamper diagnostic.
     </p>
 
     <div class="scenarios">
@@ -837,6 +837,36 @@ assay verify-pack ./gallery/05-reviewer-packet-gaps/reviewer_packet/proof_pack</
           <div class="sc-meta">
             <div class="sc-meta-item"><span class="sc-meta-label">MCP tools</span><span class="sc-meta-value">weather, inventory, risk</span></div>
             <div class="sc-meta-item"><span class="sc-meta-label">Exit</span><span class="sc-meta-value">0</span></div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Customer-Data Boundary Crash Test — boundary / tamper diagnostic -->
+      <div id="customer-data-boundary-crash-test" class="scenario sc-tampered">
+        <div class="sc-header">
+          <div>
+            <div style="font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--dimmer);margin-bottom:0.25rem;">Boundary / tamper diagnostic</div>
+            <div class="sc-title">Customer-Data Boundary Crash Test</div>
+          </div>
+          <span class="outcome-badge tampered">DIAGNOSTIC</span>
+        </div>
+        <div class="sc-desc">
+          An authentic customer-data-boundary packet passes; a tampered packet fails.
+          <strong>v1 says the bundle is broken. v2 says where the evidence broke: <code>source_index</code> plus expected/actual hashes.</strong>
+          Bounded claim only: this observed evidence trail stayed inside this declared boundary, and later mutation is detectable.
+        </div>
+        <div class="sc-links">
+          <a href="https://github.com/Haserjian/assay-proof-gallery/blob/main/gallery/customer-data-boundary-crash-test/README.md">View crash test (README)</a>
+          <a href="https://github.com/Haserjian/assay-proof-gallery/tree/main/gallery/customer-data-boundary-crash-test">View files</a>
+        </div>
+        <details class="sc-secondary">
+          <summary class="sc-secondary-label">Details</summary>
+          <div class="sc-details-content">bash gallery/customer-data-boundary-crash-test/verify.sh authentic   # exit 0
+bash gallery/customer-data-boundary-crash-test/verify.sh tampered    # exit 1</div>
+          <div class="sc-meta">
+            <div class="sc-meta-item"><span class="sc-meta-label">Authentic</span><span class="sc-meta-value" style="color:var(--green)">PASS</span></div>
+            <div class="sc-meta-item"><span class="sc-meta-label">Tampered</span><span class="sc-meta-value" style="color:var(--red)">FAIL</span></div>
+            <div class="sc-meta-item"><span class="sc-meta-label">Diagnostic</span><span class="sc-meta-value">source_index + sha256</span></div>
           </div>
         </details>
       </div>
