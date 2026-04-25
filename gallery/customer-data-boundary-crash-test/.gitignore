@@ -1,0 +1,4 @@
+# Local Ed25519 signing key material used by _generate.py.
+# Not part of the demo artifact: the public verify key is embedded in
+# pack_manifest.json. Each developer regenerates _keys/ on demand.
+_keys/

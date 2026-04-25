@@ -1,0 +1,72 @@
+{
+  "pack_id": "pack_deterministic_a0beea54",
+  "pack_version": "0.1.0",
+  "manifest_version": "1.0.0",
+  "hash_alg": "sha256",
+  "attestation": {
+    "pack_format_version": "0.1.0",
+    "fingerprint_version": 1,
+    "pack_id": "pack_deterministic_a0beea54",
+    "run_id": "trace_20260425T090000_demo01",
+    "suite_id": "manual",
+    "suite_hash": "36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88",
+    "verifier_version": "1.17.0",
+    "canon_version": "jcs-rfc8785",
+    "canon_impl": "receipts.jcs",
+    "canon_impl_version": "1.17.0",
+    "policy_hash": "4791aaa760a131484e3c971c4f9b171ad1ef2f6fb9c2e4858fdad6d8fc8f6c0f",
+    "claim_set_id": "none",
+    "claim_set_hash": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe",
+    "receipt_integrity": "PASS",
+    "claim_check": "N/A",
+    "discrepancy_fingerprint": null,
+    "assurance_level": "L0",
+    "proof_tier": "signed-pack",
+    "mode": "shadow",
+    "head_hash": "3d7c6f83345102816849b5a47c3b586b9b16e5533febde3f826bb1bc09dcdfbc",
+    "head_hash_algorithm": "last-receipt-digest-v0",
+    "time_authority": "local_clock",
+    "n_receipts": 6,
+    "timestamp_start": "2026-04-25T09:00:01+00:00",
+    "timestamp_end": "2026-04-25T09:00:06+00:00",
+    "ci_binding": null,
+    "valid_until": null,
+    "superseded_by": null
+  },
+  "attestation_sha256": "e881dcc5f1e08016507a03897d1a3d4998474b3b83b87827acc0537b46a131e8",
+  "suite_hash": "36bde66f289a35683683b041c6d8f418a5f36607b547da25d00ad55891e80b88",
+  "claim_set_id": "none",
+  "claim_set_hash": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe",
+  "receipt_count_expected": 6,
+  "files": [
+    {
+      "path": "receipt_pack.jsonl",
+      "sha256": "06ead4869d33264c638de2b0ff26e6605963d3b57c1c0a4a7f57e1d61780c2d0",
+      "bytes": 2060
+    },
+    {
+      "path": "verify_report.json",
+      "sha256": "9101917101bb6c34affc8c4f1bf9d46b6ecb7d4f50fe2f2e1437418df0356b01",
+      "bytes": 325
+    },
+    {
+      "path": "verify_transcript.md",
+      "sha256": "975dcaec4672c5673118f0061ad41ff16baadfc933ac4b78d6a827ecf644d62c",
+      "bytes": 1036
+    }
+  ],
+  "expected_files": [
+    "receipt_pack.jsonl",
+    "verify_report.json",
+    "verify_transcript.md",
+    "pack_manifest.json",
+    "pack_signature.sig"
+  ],
+  "signer_id": "assay-gallery-demo",
+  "signer_pubkey": "TDbonOViHcE4UKPnl1Fr+yB03lqeRH/bW4B2sTrOu3M=",
+  "signer_pubkey_sha256": "8e55f1b72b4e8626b2124ae9be531303ede251d599b907f7daf878224318ab9c",
+  "signature_alg": "ed25519",
+  "signature_scope": "JCS(pack_manifest_excluding_signature_and_pack_root_sha256)",
+  "signature": "DJrlKkLRXahhAS4QfiB7HMWqiWyHgq4WQpOKcieX7wsW+9vITqTxOPalBoCvaxlUgZJ8o19mUAEtuTLjwn+aBA==",
+  "pack_root_sha256": "e881dcc5f1e08016507a03897d1a3d4998474b3b83b87827acc0537b46a131e8"
+}
