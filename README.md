@@ -25,6 +25,8 @@ assay verify-pack ./gallery/03-tamper-demo/tampered           # exit 2 — TAMPE
 assay verify-pack ./gallery/04-mcp-notary-proxy/proof_pack   # exit 0 — MCP NOTARY
 assay reviewer verify ./gallery/05-reviewer-packet-gaps/reviewer_packet   # VERIFIED_WITH_GAPS
 assay reviewer verify ./gallery/06-naic-aiset-mapping/reviewer_packet     # VERIFIED_WITH_GAPS
+assay verify-pack ./gallery/07-contested-decision/proof_pack   # exit 0 — CONTESTED DECISION (authentic)
+assay verify-pack ./gallery/07-contested-decision/tampered_pack # exit 2 — CONTESTED DECISION (tampered)
 ```
 
 No account. No API call. No vendor-hosted logs or vendor dashboard required.
@@ -59,6 +61,7 @@ and what verification does and does not prove.
 | `engineering_verification` | 02, 04 | Honest-fail and MCP/tool-use verification for engineering teams |
 | `reviewer_packet` | 05 | Canonical buyer/reviewer packet with explicit scope and gaps |
 | `regulatory_control_mapping` | 06 | Canonical compliance/control mapping packet (NAIC AISET example) |
+| `contested_decision` | 07 | Before/after specimen for a disputed AI decision — reconstruction vs offline verification |
 
 ### 01 — FintechCo Loan Approval (exit 0)
 
@@ -147,6 +150,26 @@ between machine-proven, human-attested, partial, and out-of-scope claims explici
 | Does not prove | NAIC compliance, legal sufficiency, or regulator endorsement |
 
 → [gallery/06-naic-aiset-mapping/](gallery/06-naic-aiset-mapping/)
+
+### 07 — Contested Vendor Decision (exit 0 / exit 2)
+
+Before/after specimen for a disputed AI-assisted procurement decision. Path A
+reconstructs from Slack, email, dashboards, and memory and still ends with
+caveats. Path B opens a signed decision packet and verifies it offline — the
+disputing vendor can check the record without trusting the operator.
+
+Two packs ship side-by-side: `proof_pack/` verifies clean (exit 0) and
+`tampered_pack/` has one byte changed and returns `E_MANIFEST_TAMPER` (exit 2).
+The companion [`dispute_packet.md`](gallery/07-contested-decision/dispute_packet.md)
+lays out the full before/after comparison.
+
+| Field | Value |
+|-------|-------|
+| Verification | PASS (authentic) / TAMPERED (altered) |
+| Proves | A contested decision can be verified offline by the disputing party; one-byte tamper is deterministically detectable |
+| Does not prove | That the AI's recommendation was correct, fair, or unbiased; that upstream proposals were authentic; that this was the only evaluation run |
+
+→ [gallery/07-contested-decision/](gallery/07-contested-decision/)
 
 ---
 
