@@ -27,7 +27,7 @@
       "Coverage is partial, so the packet settlement is VERIFIED_WITH_GAPS."
     ],
     "freshness_policy": {
-      "valid_for": "P30D",
+      "valid_for": "P3650D",
       "stale_after": "P90D"
     }
   },

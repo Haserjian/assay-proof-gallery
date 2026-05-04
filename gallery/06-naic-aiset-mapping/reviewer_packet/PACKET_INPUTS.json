@@ -28,7 +28,7 @@
       "Coverage is scoped to the declared entrypoints."
     ],
     "freshness_policy": {
-      "valid_for": "P30D",
+      "valid_for": "P3650D",
       "stale_after": "P90D",
       "stale_behavior": "downgrade_to_verified_with_gaps"
     },

@@ -25,6 +25,18 @@ jobs:
       - name: Check gallery contract (committed artifacts)
         run: python scripts/check_gallery.py --verbose
 
+      - name: Assert PASS sample is signer-pinned and warning-free
+        run: |
+          assay verify-pack gallery/01-fintech-pass/proof_pack \
+            --lock gallery/01-fintech-pass/assay.lock \
+            --json > /tmp/gallery01.json
+          python - <<'PY'
+          import json
+          data = json.load(open('/tmp/gallery01.json'))
+          assert data.get('passed') is True, data
+          assert data.get('warnings') == [], data.get('warnings')
+          PY
+
       - name: Rebuild gallery from source
         run: python scripts/build_gallery.py
 

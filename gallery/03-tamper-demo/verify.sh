@@ -2,7 +2,10 @@
 # Verify this proof pack locally. Expected result: INTEGRITY FAIL (tampered) (exit 2)
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-python3 -m pip install assay-ai -q
+if ! command -v assay >/dev/null 2>&1; then
+  echo "assay CLI not found. Install assay-ai in a virtualenv or with pipx, then rerun this script." >&2
+  exit 127
+fi
 echo ""
 echo "Verifying tampered..."
 echo ""

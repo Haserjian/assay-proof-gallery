@@ -38,9 +38,13 @@ an AI governance questionnaire.
 
 ```bash
 pip install assay-ai
-assay verify-pack ./proof_pack
+assay verify-pack ./proof_pack --lock ./assay.lock
 # Expected: exit 0 (PASS)
 ```
+
+`assay.lock` pins the expected signer fingerprint for this public sample, so
+verification checks both pack integrity and signer identity instead of trusting
+only the embedded public key.
 
 Or run the bundled script:
 

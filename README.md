@@ -18,7 +18,8 @@ py -m pip install assay-ai
 ```
 
 ```bash
-assay verify-pack ./gallery/01-fintech-pass/proof_pack       # exit 0 — PASS
+assay verify-pack ./gallery/01-fintech-pass/proof_pack \
+  --lock ./gallery/01-fintech-pass/assay.lock                 # exit 0 — PASS, signer pinned
 assay verify-pack ./gallery/02-insurance-honest-fail/proof_pack \
   --require-claim-pass                                        # exit 1 — HONEST FAIL
 assay verify-pack ./gallery/03-tamper-demo/tampered           # exit 2 — TAMPERED
@@ -163,6 +164,15 @@ python3 -m pip install assay-ai   # on Windows: py -m pip install assay-ai
 
 # Check all scenarios against the contract
 python scripts/check_gallery.py --verbose
+```
+
+The PASS sample also includes `gallery/01-fintech-pass/assay.lock`, which pins
+the sample signer fingerprint. Use it when you need warning-free signer identity
+verification:
+
+```bash
+assay verify-pack ./gallery/01-fintech-pass/proof_pack \
+  --lock ./gallery/01-fintech-pass/assay.lock --json
 ```
 
 Or rebuild from scratch:

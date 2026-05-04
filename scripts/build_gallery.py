@@ -109,6 +109,39 @@ SCENARIOS = {
         "verification_command": "verify_pack",
         "primary_artifact_path": "proof_pack",
     },
+    "08-rce-replay-match": {
+        "exit_code": 0,
+        "integrity": "PASS",
+        "claims": "PASS",
+        "description": "RCE episode replay -- all recorded traces match receipt hashes (Tier A)",
+        "scenario_class": "rce_replay",
+        "primary_audience": ["engineer", "security"],
+        "claim_class": "rce_replay_match",
+        "verification_command": "rce-verify",
+        "primary_artifact_path": ".",
+    },
+    "09-rce-replay-diverge": {
+        "exit_code": 1,
+        "integrity": "PASS",
+        "claims": "FAIL",
+        "description": "RCE episode replay -- recorded traces differ from receipts (honest divergence)",
+        "scenario_class": "rce_replay",
+        "primary_audience": ["engineer", "security"],
+        "claim_class": "rce_replay_diverge",
+        "verification_command": "rce-verify",
+        "primary_artifact_path": ".",
+    },
+    "10-rce-tampered-replay": {
+        "exit_code": 2,
+        "integrity": "FAIL",
+        "claims": None,
+        "description": "RCE episode replay -- tampered receipt detected before replay comparison",
+        "scenario_class": "rce_replay",
+        "primary_audience": ["engineer", "security"],
+        "claim_class": "rce_integrity_fail",
+        "verification_command": "rce-verify",
+        "primary_artifact_path": ".",
+    },
 }
 
 
@@ -590,6 +623,28 @@ def build_reviewer_packet_scenario(scenario_id: str, scenario_dir: Path):
     return reviewer_verify.returncode
 
 
+def verify_static_rce_scenario(scenario_id: str, scenario_dir: Path):
+    """Scenario 08/09/10: validate committed RCE replay packs."""
+    print(f"\n[{scenario_id[:2]}] Verifying static RCE replay scenario...")
+    with tempfile.TemporaryDirectory(prefix="assay-gallery-rce-") as tmp:
+        result = run(
+            [
+                ASSAY_CMD,
+                "rce-verify",
+                str(scenario_dir),
+                "--out-dir",
+                tmp,
+                "--overwrite",
+                "--json",
+            ],
+            check=False,
+            capture=True,
+        )
+    data = json.loads(result.stdout) if result.stdout.strip().startswith("{") else {}
+    print(f"  exit={result.returncode}  verdict={data.get('verdict', '?')}")
+    return result.returncode
+
+
 def write_verify_sh(scenario_dir: Path, pack_subpath: str, expected_exit: int, extra_flags: str = ""):
     """Write verify.sh for a scenario."""
     label = {0: "PASS", 1: "HONEST FAIL (claims)", 2: "INTEGRITY FAIL (tampered)"}.get(
@@ -603,7 +658,10 @@ def write_verify_sh(scenario_dir: Path, pack_subpath: str, expected_exit: int, e
 # Verify this proof pack locally. Expected result: {label} (exit {expected_exit})
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-python3 -m pip install assay-ai -q
+if ! command -v assay >/dev/null 2>&1; then
+  echo "assay CLI not found. Install assay-ai in a virtualenv or with pipx, then rerun this script." >&2
+  exit 127
+fi
 echo ""
 echo "Verifying {pack_subpath}..."
 echo ""
@@ -622,6 +680,36 @@ fi
 """
     (scenario_dir / "verify.sh").write_text(script)
     (scenario_dir / "verify.sh").chmod(0o755)
+
+
+def write_assay_lock_for_pack(scenario_dir: Path, pack_subpath: str) -> Path:
+    """Write a verifier lockfile pinning the proof-pack signer fingerprint."""
+    manifest_path = scenario_dir / pack_subpath / "pack_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    attestation = manifest.get("attestation", {})
+    claim_hash = manifest.get("claim_set_hash") or attestation.get("claim_set_hash", "")
+    lock = {
+        "lock_version": "1.0",
+        "assay_version_min": attestation.get("verifier_version", "1.15.1"),
+        "assay_version_max": "2.0.0",
+        "pack_format_version": attestation.get("pack_format_version", "0.1.0"),
+        "receipt_schema_version": attestation.get("receipt_schema_version", "3.0"),
+        "run_cards": [],
+        "run_cards_composite_hash": claim_hash,
+        "claim_set_hash": claim_hash,
+        "exit_contract": {
+            "0": "integrity_pass AND claims_pass",
+            "1": "integrity_pass AND claims_fail",
+            "2": "integrity_fail",
+        },
+        "signer_policy": {
+            "mode": "allowlist",
+            "allowed_fingerprints": [manifest["signer_pubkey_sha256"]],
+        },
+    }
+    lock_path = scenario_dir / "assay.lock"
+    lock_path.write_text(json.dumps(lock, indent=2) + "\n")
+    return lock_path
 
 
 def write_reviewer_verify_sh(scenario_dir: Path, expected_settlement: str):
@@ -905,7 +993,8 @@ def main():
 
         if scenario_id == "01-fintech-pass":
             exit_code = build_scenario_01(scenario_dir)
-            write_verify_sh(scenario_dir, "proof_pack", 0)
+            write_assay_lock_for_pack(scenario_dir, "proof_pack")
+            write_verify_sh(scenario_dir, "proof_pack", 0, extra_flags="--lock ./assay.lock")
         elif scenario_id == "02-insurance-honest-fail":
             exit_code = build_scenario_02(scenario_dir)
             write_verify_sh(scenario_dir, "proof_pack", 1, extra_flags="--require-claim-pass")
@@ -924,6 +1013,12 @@ def main():
         elif scenario_id == "07-contested-decision":
             exit_code = build_scenario_07(scenario_dir)
             write_contested_verify_sh(scenario_dir)
+        elif scenario_id in {
+            "08-rce-replay-match",
+            "09-rce-replay-diverge",
+            "10-rce-tampered-replay",
+        }:
+            exit_code = verify_static_rce_scenario(scenario_id, scenario_dir)
 
         results[scenario_id] = {
             "built": True,

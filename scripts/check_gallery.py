@@ -19,6 +19,7 @@ import argparse
 import json
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -137,6 +138,40 @@ def _check_reviewer_packet_contract(scenario: dict, scenario_dir: Path, verbose:
     return True
 
 
+def _check_rce_verify_contract(pack_dir: Path, expected_exit: int, verbose: bool) -> bool:
+    with tempfile.TemporaryDirectory(prefix="assay-gallery-rce-") as tmp:
+        cmd = [
+            ASSAY_CMD,
+            "rce-verify",
+            str(pack_dir),
+            "--out-dir",
+            tmp,
+            "--overwrite",
+            "--json",
+        ]
+        if verbose:
+            print(f"  $ {' '.join(cmd)}")
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode == expected_exit:
+        verdict = "UNKNOWN"
+        if result.stdout.strip().startswith("{"):
+            try:
+                verdict = json.loads(result.stdout).get("verdict", verdict)
+            except json.JSONDecodeError:
+                pass
+        print(f"  OK  rce exit={result.returncode} ({verdict})  [expected {expected_exit}]")
+        return True
+
+    print(f"  FAIL  rce exit={result.returncode}  [expected {expected_exit}]")
+    if result.stdout.strip():
+        print(f"      stdout: {result.stdout.strip()[:400]}")
+    if result.stderr.strip():
+        print(f"      stderr: {result.stderr.strip()[:200]}")
+    return False
+
+
 def check_scenario(scenario: dict, verbose: bool) -> bool:
     sid = scenario["id"]
     expected_exit = scenario["expected_verification_exit_code"]
@@ -175,6 +210,9 @@ def check_scenario(scenario: dict, verbose: bool) -> bool:
     if transcript.stat().st_size == 0:
         print(f"  FAIL: verify_transcript.md is empty")
         return False
+
+    if verification_command == "rce-verify":
+        return _check_rce_verify_contract(pack_dir, expected_exit, verbose)
 
     # 6. Run assay verify-pack and assert expected exit code
     return _check_verify_pack_contract(pack_dir, sid, expected_exit, verbose)

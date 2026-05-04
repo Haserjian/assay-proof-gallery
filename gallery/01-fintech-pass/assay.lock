@@ -1,0 +1,21 @@
+{
+  "lock_version": "1.0",
+  "assay_version_min": "1.15.1",
+  "assay_version_max": "2.0.0",
+  "pack_format_version": "0.1.0",
+  "receipt_schema_version": "3.0",
+  "run_cards": [],
+  "run_cards_composite_hash": "abbc9882b6cde415903178aaed71d703f59faa57e8eaba773c5846b8cfe27d7a",
+  "claim_set_hash": "abbc9882b6cde415903178aaed71d703f59faa57e8eaba773c5846b8cfe27d7a",
+  "exit_contract": {
+    "0": "integrity_pass AND claims_pass",
+    "1": "integrity_pass AND claims_fail",
+    "2": "integrity_fail"
+  },
+  "signer_policy": {
+    "mode": "allowlist",
+    "allowed_fingerprints": [
+      "a211e933a251212953e8f535dc595d2c8c11545cee2f00a2ba20f4aa04e4b03d"
+    ]
+  }
+}
